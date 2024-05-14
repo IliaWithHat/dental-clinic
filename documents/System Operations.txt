@@ -15,9 +15,14 @@ List<UserDto> findById(Int id) || findAll() -> найти пользовател
 
 
 
-boolean setWorkingDays(String[] days, Int doctorId) -> установить рабочие дни врача
-boolean setWorkingHours(LocalTime startHour, LocalTime endHour, Int doctorId) -> установить рабочие часы врача
-boolean setTimePeriod(Int minutes, Int doctorId) -> установить промежуток времени между пациентами
+WorkingTime {
+    String[] days,
+    LocalTime startHour,
+    LocalTime endHour,
+    Int timeIntervalInMinutes
+}
+
+void setWorkingTime(WorkingTime, Int doctorId) -> установить рабочее время врача
 
 
 
