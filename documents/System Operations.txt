@@ -1,0 +1,52 @@
+UserDto {
+    Int id,
+    String email,
+    String firstName,
+    String lastName,
+    LocalDate birthDate,
+    String phone,
+    Enum role
+}
+
+UserDto createUser(UserDto) -> создать пользователя с разными ролями
+UserDto updateUser(UserDto) -> обновить пользователя
+void deleteUser(Int id) -> удалить пользователя
+List<UserDto> findById(Int id) || findAll() -> найти пользователя
+
+
+
+boolean setWorkingDays(String[] days, Int doctorId) -> установить рабочие дни врача
+boolean setWorkingHours(LocalTime startHour, LocalTime endHour, Int doctorId) -> установить рабочие часы врача
+boolean setTimePeriod(Int minutes, Int doctorId) -> установить промежуток времени между пациентами
+
+
+
+Appointment {
+    Int id,
+    LocalDateTime date,
+    boolean isPatientCome,
+    String serviceInfo,
+    BigDecimal price,
+    Int patientId,
+    Int doctorId
+}
+DateRange {
+    LocalDate from,
+    LocalDate to
+}
+
+Appointment createAppointment(Appointment) -> создать запись к врачу
+Appointment updateAppointment(Appointment) -> обновить запись
+void deleteAppointment(Int appointmentId) -> удалить запись
+List<Appointment> getAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
+List<Appointment> getAllOccupiedAppointmentsByDoctorId(Int doctorId) -> найти все занятые записи к врачу
+List<Appointment> getAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
+к врачу по заданному диапазону
+List<Appointment> getAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
+к врачу по заданному диапазону
+
+
+
+void sendAppointmentConfirmationEmailToPatient(Appointment) -> отправить письмо с подтверждением записи к врачу
+void sendNotificationEmailToPatient() -> отправить письмо с напоминанием о записи за день пациенту
+void sendReportEmailToOwner() -> отправить письмо с отчётом владельцу
