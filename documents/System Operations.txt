@@ -11,7 +11,9 @@ UserDto {
 UserDto createUser(UserDto) -> создать пользователя с разными ролями
 UserDto updateUser(UserDto) -> обновить пользователя
 void deleteUser(Int id) -> удалить пользователя
-List<UserDto> findById(Int id) && findAll() -> найти пользователя
+List<UserDto> findById(Int id) -> найти пользователя
+List<UserDto> findAllPatients() -> найти всех пациентов
+List<UserDto> findAllDoctors() -> найти всех врачей
 
 
 
