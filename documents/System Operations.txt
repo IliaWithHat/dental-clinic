@@ -1,21 +1,22 @@
 User Service
 ------------------------------------------------------------------------------------------------------------------------
-UserDto {
+User {
     Int id,
     String email,
     String firstName,
     String lastName,
     LocalDate birthDate,
     String phone,
+    Bool isWorking,
     Enum role
 }
 
-UserDto createUser(UserDto) -> создать пользователя с разными ролями
-UserDto updateUser(UserDto) -> обновить пользователя
+User createUser(User) -> создать пользователя с разными ролями
+User updateUser(User) -> обновить пользователя
 void deleteUser(Int id) -> удалить пользователя
-List<UserDto> findById(Int id) -> найти пользователя
-List<UserDto> findAllPatients() -> найти всех пациентов
-List<UserDto> findAllDoctors() -> найти всех врачей
+List<User> findById(Int id) -> найти пользователя
+List<User> findAllPatients() -> найти всех пациентов
+List<User> findAllDoctors() -> найти всех врачей
 ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -25,7 +26,8 @@ WorkingTime {
     String[] days,
     LocalTime startHour,
     LocalTime endHour,
-    Int timeIntervalInMinutes
+    Int timeIntervalInMinutes,
+    Int doctorId
 }
 
 void setWorkingTime(WorkingTime, Int doctorId) -> установить рабочее время врача
