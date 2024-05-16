@@ -23,14 +23,15 @@ List<User> findAllDoctors() -> найти всех врачей
 Time Service
 ------------------------------------------------------------------------------------------------------------------------
 WorkingTime {
-    String[] days,
+    String day,
     LocalTime startHour,
     LocalTime endHour,
     Int timeIntervalInMinutes,
     Int doctorId
 }
 
-void setWorkingTime(WorkingTime, Int doctorId) -> установить рабочее время врача
+void setWorkingTime(List<WorkingTime>) -> установить рабочее время врача
+List<WorkingTime> findAllWorkingTimesByDoctorId(Int doctorId) -> найти рабочее время врача
 ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -53,11 +54,11 @@ DateRange {
 Appointment createAppointment(Appointment) -> создать запись к врачу
 Appointment updateAppointment(Appointment) -> обновить запись
 void deleteAppointment(Int appointmentId) -> удалить запись
-List<Appointment> getAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
-List<Appointment> getAllOccupiedAppointmentsByDoctorId(Int doctorId) -> найти все занятые записи к врачу
-List<Appointment> getAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
+List<Appointment> findAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
+List<Appointment> findAllOccupiedAppointmentsByDoctorId(Int doctorId) -> найти все занятые записи к врачу
+List<Appointment> findAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
 к врачу по заданному диапазону
-List<Appointment> getAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
+List<Appointment> findAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
 к врачу по заданному диапазону
 ------------------------------------------------------------------------------------------------------------------------
 
