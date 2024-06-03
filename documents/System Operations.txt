@@ -7,10 +7,15 @@ User {
     String lastName,
     LocalDate birthDate,
     String phone,
+    String password,
     Bool isWorking,
     Enum role
 }
+Token {
+    String accessToken
+}
 
+Token login(User) -> аутентификация пользователя
 User createUser(User) -> создать пользователя с разными ролями
 User updateUser(User) -> обновить пользователя
 void deleteUser(Int id) -> удалить пользователя
