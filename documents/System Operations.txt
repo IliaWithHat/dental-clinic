@@ -15,13 +15,24 @@ Token {
     String accessToken
 }
 
+POST /user/login
 Token login(User) -> аутентификация пользователя
+
+POST /user/signUp
+POST /user
 User createUser(User) -> создать пользователя с разными ролями
+
+PUT /user/{id}
 User updateUser(User) -> обновить пользователя
+
+DELETE /user/{id}
 void deleteUser(Int id) -> удалить пользователя
+
+GET /user/{id}
 List<User> findById(Int id) -> найти пользователя
-List<User> findAllPatients() -> найти всех пациентов
-List<User> findAllDoctors() -> найти всех врачей
+
+GET /user?role={role}
+List<User> findByRole() -> найти пользователей по роли
 ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -35,8 +46,14 @@ WorkingTime {
     Int doctorId
 }
 
+POST /working-time
 void setWorkingTime(List<WorkingTime>) -> установить рабочее время врача
-List<WorkingTime> findAllWorkingTimesByDoctorId(Int doctorId) -> найти рабочее время врача
+
+DELETE /working-time/{doctorId}
+void deleteWorkingTime(Int doctorId) -> удалить рабочее время врача
+
+GET /working-time/{doctorId}
+List<WorkingTime> findAllWorkingTimeByDoctorId(Int doctorId) -> найти рабочее время врача
 ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -56,15 +73,30 @@ DateRange {
     LocalDate to
 }
 
+POST /{role}/{patientId}/appointment
 Appointment createAppointment(Appointment) -> создать запись к врачу
+
+PUT /{role}/{patientId}/appointment/{id}
 Appointment updateAppointment(Appointment) -> обновить запись
+
+DELETE /{role}/{patientId}/appointment/{id}
 void deleteAppointment(Int appointmentId) -> удалить запись
+
+GET /{role}/{patientId}/appointment
 List<Appointment> findAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
+
+GET /{role}/{doctorId}/appointment?state=occupied
 List<Appointment> findAllOccupiedAppointmentsByDoctorId(Int doctorId) -> найти все занятые записи к врачу
+
+GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=occupied
 List<Appointment> findAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
 к врачу по заданному диапазону
+
+GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=free
 List<Appointment> findAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
 к врачу по заданному диапазону
+
+{role} can be user or doctor
 ------------------------------------------------------------------------------------------------------------------------
 
 
