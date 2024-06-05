@@ -1,0 +1,93 @@
+services:
+  database:
+    image: postgres:16.1
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "dental-clinic-repository"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./sql/keycloak.sql:/docker-entrypoint-initdb.d/1-keycloak.sql
+      - dental-clinic-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    networks:
+      backend:
+        aliases:
+          - "database"
+
+  keycloak:
+    image: bitnami/keycloak:24.0.4
+    container_name: keycloak-container
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      KEYCLOAK_DATABASE_USER: postgres
+      KEYCLOAK_DATABASE_PASSWORD: postgres
+      KEYCLOAK_DATABASE_NAME: keycloak
+      KEYCLOAK_DATABASE_HOST: database
+
+      KEYCLOAK_HTTP_PORT: 8001
+      KC_HOSTNAME_URL: http://keycloak:8001
+      KC_HOSTNAME_ADMIN_URL: http://keycloak:8001
+
+      KC_LOG_LEVEL: DEBUG
+      KC_HEALTH_ENABLED: true
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fs localhost:8001/health | grep UP || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+    networks:
+      backend:
+        aliases:
+          - "keycloak"
+
+  configserver:
+    build: ../config-server
+    image: config-server-image
+    container_name: config-server-container
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fs localhost:8000/actuator/health | grep UP || exit 1" ]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "8000:8000"
+    networks:
+      backend:
+        aliases:
+          - "configserver"
+
+  userservice:
+    build: ../user-service
+    image: user-service-image
+    container_name: user-service-container
+    env_file: env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+    ports:
+      - "8010:8010"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  dental-clinic-data:
+    name: dental-clinic-data
