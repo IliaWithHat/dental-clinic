@@ -3,7 +3,6 @@ package org.ilia.userservice.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -35,10 +36,12 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,
+                        .requestMatchers(POST,
                                 "v1/user/signUp", "/v1/user/login").permitAll()
-                        .requestMatchers(HttpMethod.POST,
+                        .requestMatchers(POST,
                                 "v1/user").hasRole("OWNER")
+                        .requestMatchers(DELETE,
+                                "v1/user/{id}").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
@@ -68,8 +71,7 @@ public class SecurityConfiguration {
 
         private Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
             Map<String, Map<String, List<String>>> clientAndRoles = principal.getAttribute("resource_access");
-            List<String> roles = clientAndRoles.get(clientId).get("roles");
-            return roles.stream()
+            return clientAndRoles.get(clientId).get("roles").stream()
                     .map(str -> "ROLE_" + str)
                     .map(SimpleGrantedAuthority::new)
                     .collect(toList());

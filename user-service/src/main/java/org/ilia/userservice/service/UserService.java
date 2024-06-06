@@ -26,4 +26,8 @@ public class UserService {
     public LoginResponse login(LoginRequest loginRequest) {
         return new LoginResponse(keycloakService.getAccessToken(loginRequest));
     }
+
+    public void delete(String id) {
+        keycloakService.deleteUser(id);
+    }
 }

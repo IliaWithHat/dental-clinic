@@ -12,14 +12,17 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.springframework.http.HttpMethod.GET;
 
 @Service
 @RequiredArgsConstructor
@@ -29,15 +32,15 @@ public class KeycloakService {
     private final RestTemplate restTemplate;
     private final UserMapper userMapper;
 
-    public boolean createPatient(SignUpRequest signUpRequest) {
-        return createUser(userMapper.toUser(signUpRequest), "dental-clinic-patient");
+    public UUID createPatient(SignUpRequest signUpRequest) {
+        return createUser(userMapper.toUser(signUpRequest), "PATIENT");
     }
 
-    public boolean createDoctor(CreateUserRequest createUserRequest) {
-        return createUser(userMapper.toUser(createUserRequest), "dental-clinic-doctor");
+    public UUID createDoctor(CreateUserRequest createUserRequest) {
+        return createUser(userMapper.toUser(createUserRequest), "DOCTOR");
     }
 
-    public boolean createUser(User user, String role) {
+    public UUID createUser(User user, String role) {
         String createUserUrl = keycloakProperties.getServerUrl()
                                + "/admin/realms/"
                                + keycloakProperties.getRealm()
@@ -59,7 +62,36 @@ public class KeycloakService {
 
         restTemplate.postForEntity(createUserUrl, new HttpEntity<>(payload, getAdminHttpHeaders()), Void.class);
         addRoleToUser(role, user);
-        return true;
+        return UUID.fromString((String) getUserByEmail(user.getEmail()).get("id"));
+    }
+
+    public void deleteUser(String id) {
+        String currentUserId = Optional.of(SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                .map(DefaultOAuth2AuthenticatedPrincipal.class::cast)
+                .map(DefaultOAuth2AuthenticatedPrincipal::getName)
+                .get();
+        List<String> currentUserRoles = SecurityContextHolder.getContext()
+                .getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(str -> str.replace("ROLE_", ""))
+                .toList();
+        List<String> userRolesOnDeletion = getUserRolesByUserId(id).stream()
+                .map(entry -> entry.get("name"))
+                .map(String.class::cast)
+                .toList();
+
+        if ((currentUserRoles.contains("OWNER") && (userRolesOnDeletion.contains("PATIENT") || userRolesOnDeletion.contains("DOCTOR"))) ||
+            (currentUserRoles.contains("PATIENT") && userRolesOnDeletion.contains("PATIENT") && currentUserId.equals(id))) {
+            String deleteUserUrl = keycloakProperties.getServerUrl()
+                                   + "/admin/realms/"
+                                   + keycloakProperties.getRealm()
+                                   + "/users/"
+                                   + id;
+
+            restTemplate.exchange(deleteUserUrl, HttpMethod.DELETE, new HttpEntity<>(getAdminHttpHeaders()), Void.class);
+        } else {
+            throw new UserNotFoundException(id);
+        }
     }
 
     private Map<String, String> addAttributes(User user) {
@@ -75,13 +107,15 @@ public class KeycloakService {
     private void addRoleToUser(String role, User user) {
         String roleId = (String) getRole(role).get("id");
         String userId = (String) getUserByEmail(user.getEmail()).get("id");
+        String clientUuid = (String) getClient().get("id");
 
         String roleMappingUrl = keycloakProperties.getServerUrl()
                                 + "/admin/realms/"
                                 + keycloakProperties.getRealm()
                                 + "/users/"
                                 + userId
-                                + "/role-mappings/realm";
+                                + "/role-mappings/clients/"
+                                + clientUuid;
 
         Map<String, String> payload = new HashMap<>();
         payload.put("id", roleId);
@@ -91,30 +125,75 @@ public class KeycloakService {
     }
 
     private Map<String, Object> getRole(String role) {
-        String getPatientRoleUrl = keycloakProperties.getServerUrl()
-                                   + "/admin/realms/"
-                                   + keycloakProperties.getRealm()
-                                   + "/roles/"
-                                   + role;
+        String clientUuid = (String) getClient().get("id");
 
-        return restTemplate.exchange(getPatientRoleUrl, HttpMethod.GET, new HttpEntity<>(getAdminHttpHeaders()), Map.class).getBody();
+        String roleUrl = keycloakProperties.getServerUrl()
+                         + "/admin/realms/"
+                         + keycloakProperties.getRealm()
+                         + "/clients/"
+                         + clientUuid
+                         + "/roles";
+        List<Map<String, Object>> roles = restTemplate.exchange(roleUrl, GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
+        return roles.stream()
+                .filter(oneRole -> oneRole.get("name").equals(role))
+                .findFirst().get();
+    }
+
+    private Map<String, Object> getClient() {
+        String clientUrl = keycloakProperties.getServerUrl()
+                           + "/admin/realms/"
+                           + keycloakProperties.getRealm()
+                           + "/clients";
+        List<Map<String, Object>> allClients = restTemplate.exchange(clientUrl, GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
+        return allClients.stream()
+                .filter(oneClient -> oneClient.get("clientId").equals(keycloakProperties.getClientId()))
+                .toList().getFirst();
+    }
+
+    private Map<String, Object> getUserById(String id) {
+        String url = keycloakProperties.getServerUrl()
+                     + "/admin/realms/"
+                     + keycloakProperties.getRealm()
+                     + "/users/"
+                     + id;
+
+        Map<String, Object> user = restTemplate.exchange(url, GET, new HttpEntity<>(getAdminHttpHeaders()), Map.class).getBody();
+        if (user == null) {
+            throw new UserNotFoundException("User not found by this id: " + id);
+        } else {
+            return user;
+        }
+    }
+
+    private List<Map<String, Object>> getUserRolesByUserId(String id) {
+        String clientUuid = (String) getClient().get("id");
+
+        String roleUrl = keycloakProperties.getServerUrl()
+                         + "/admin/realms/"
+                         + keycloakProperties.getRealm()
+                         + "/users/"
+                         + id
+                         + "/role-mappings/clients/"
+                         + clientUuid;
+        return (List<Map<String, Object>>) restTemplate.exchange(roleUrl, GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
     }
 
     private Map<String, Object> getUserByEmail(String email) {
         String url = keycloakProperties.getServerUrl()
                      + "/admin/realms/"
                      + keycloakProperties.getRealm()
-                     + "/users?email=" + email;
+                     + "/users?email="
+                     + email;
 
-        List users = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
-        if (users != null && !users.isEmpty()) {
-            return (Map<String, Object>) users.getFirst();
+        List<Map<String, Object>> users = restTemplate.exchange(url, GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
+        if (users == null || users.isEmpty()) {
+            throw new UserNotFoundException("User not found by this email: " + email);
         } else {
-            throw new UserNotFoundException(email);
+            return users.getFirst();
         }
     }
 
-    public HttpHeaders getAdminHttpHeaders() {
+    private HttpHeaders getAdminHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + getAccessToken());
@@ -122,6 +201,7 @@ public class KeycloakService {
     }
 
     public String getAccessToken(LoginRequest loginRequest) {
+        getUserByEmail(loginRequest.getEmail());
         return getAccessToken(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
