@@ -8,6 +8,7 @@ import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.entity.User;
+import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.exception.UserNotFoundException;
 import org.ilia.userservice.mapper.UserMapper;
 import org.keycloak.admin.client.Keycloak;
@@ -20,6 +21,9 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static org.ilia.userservice.enums.Role.DOCTOR;
+import static org.ilia.userservice.enums.Role.PATIENT;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +44,11 @@ public class KeycloakService {
     }
 
     public UUID createPatient(SignUpRequest signUpRequest) {
-        return createUser(userMapper.toUser(signUpRequest), "PATIENT");
+        return createUser(userMapper.toUser(signUpRequest), PATIENT.name());
     }
 
     public UUID createDoctor(CreateUserRequest createUserRequest) {
-        return createUser(userMapper.toUser(createUserRequest), "DOCTOR");
+        return createUser(userMapper.toUser(createUserRequest), DOCTOR.name());
     }
 
     private UUID createUser(User user, String role) {
