@@ -4,13 +4,10 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.configuration.KeycloakProperties;
-import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
-import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.exception.UserNotFoundException;
-import org.ilia.userservice.mapper.UserMapper;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientsResource;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -22,15 +19,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static org.ilia.userservice.enums.Role.DOCTOR;
-import static org.ilia.userservice.enums.Role.PATIENT;
-
 @Service
 @RequiredArgsConstructor
 public class KeycloakService {
 
     private final KeycloakProperties keycloakProperties;
-    private final UserMapper userMapper;
     private final Keycloak keycloak;
 
     private UsersResource usersResource;
@@ -43,15 +36,7 @@ public class KeycloakService {
         clientsResource = realmResource.clients();
     }
 
-    public UUID createPatient(SignUpRequest signUpRequest) {
-        return createUser(userMapper.toUser(signUpRequest), PATIENT.name());
-    }
-
-    public UUID createDoctor(CreateUserRequest createUserRequest) {
-        return createUser(userMapper.toUser(createUserRequest), DOCTOR.name());
-    }
-
-    private UUID createUser(User user, String role) {
+    public UUID createUser(User user, Role role) {
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
@@ -87,9 +72,9 @@ public class KeycloakService {
         return attributes;
     }
 
-    private void addRoleToUser(String role, String userId) {
+    private void addRoleToUser(Role role, String userId) {
         String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
-        RoleRepresentation roleRepresentation = clientsResource.get(clientUuid).roles().get(role).toRepresentation();
+        RoleRepresentation roleRepresentation = clientsResource.get(clientUuid).roles().get(role.name()).toRepresentation();
         usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
     }
 
@@ -105,6 +90,10 @@ public class KeycloakService {
         } else {
             return userRepresentations.getFirst();
         }
+    }
+
+    public UserRepresentation getUserById(String id) {
+        return usersResource.get(id).toRepresentation();
     }
 
     public String getAccessToken(LoginRequest loginRequest) {

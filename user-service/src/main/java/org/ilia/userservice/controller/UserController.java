@@ -7,6 +7,7 @@ import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.controller.response.CreateUserResponse;
 import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.controller.response.SignUpResponse;
+import org.ilia.userservice.entity.User;
 import org.ilia.userservice.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,13 @@ public class UserController {
         return ResponseEntity.ok().body(userService.login(loginRequest));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> findById(@PathVariable String id) {
+        return ResponseEntity.ok().body(userService.findById(id));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") String id) {
+    public ResponseEntity<?> delete(@PathVariable String id) {
         userService.delete(id);
         return ResponseEntity.ok().build();
     }

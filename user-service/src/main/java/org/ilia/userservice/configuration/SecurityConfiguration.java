@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -38,10 +37,12 @@ public class SecurityConfiguration {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(POST,
                                 "v1/user/signUp", "/v1/user/login").permitAll()
-                        .requestMatchers(POST,
-                                "v1/user").hasRole("OWNER")
+                        .requestMatchers(GET,
+                                "/v1/user/{id}").authenticated()
                         .requestMatchers(DELETE,
                                 "v1/user/{id}").authenticated()
+                        .requestMatchers(POST,
+                                "v1/user").hasRole("OWNER")
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))

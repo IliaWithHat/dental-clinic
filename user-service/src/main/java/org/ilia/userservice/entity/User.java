@@ -2,6 +2,7 @@ package org.ilia.userservice.entity;
 
 import lombok.Builder;
 import lombok.Data;
+import org.ilia.userservice.enums.Role;
 
 import java.time.LocalDate;
 
@@ -16,4 +17,5 @@ public class User {
     private String phoneNumber;
     private String isWorking;
     private String password;
+    private Role role;
 }
