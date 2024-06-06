@@ -2,9 +2,12 @@ package org.ilia.userservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.configuration.KeycloakProperties;
+import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
+import org.ilia.userservice.entity.User;
 import org.ilia.userservice.exception.UserNotFoundException;
+import org.ilia.userservice.mapper.UserMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -24,8 +27,17 @@ public class KeycloakService {
 
     private final KeycloakProperties keycloakProperties;
     private final RestTemplate restTemplate;
+    private final UserMapper userMapper;
 
-    public boolean createUser(SignUpRequest signUpRequest) {
+    public boolean createPatient(SignUpRequest signUpRequest) {
+        return createUser(userMapper.toUser(signUpRequest), "dental-clinic-patient");
+    }
+
+    public boolean createDoctor(CreateUserRequest createUserRequest) {
+        return createUser(userMapper.toUser(createUserRequest), "dental-clinic-doctor");
+    }
+
+    public boolean createUser(User user, String role) {
         String createUserUrl = keycloakProperties.getServerUrl()
                                + "/admin/realms/"
                                + keycloakProperties.getRealm()
@@ -34,35 +46,35 @@ public class KeycloakService {
         Map<String, Object> credential = new HashMap<>();
         credential.put("type", "password");
         credential.put("temporary", false);
-        credential.put("value", signUpRequest.getPassword());
+        credential.put("value", user.getPassword());
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("email", signUpRequest.getEmail());
-        payload.put("firstName", signUpRequest.getFirstName());
-        payload.put("lastName", signUpRequest.getLastName());
-        payload.put("attributes", Map.of(
-                "birthDate", signUpRequest.getBirthDate().toString(),
-                "phoneNumber", signUpRequest.getPhoneNumber())
-        );
+        payload.put("email", user.getEmail());
+        payload.put("firstName", user.getFirstName());
+        payload.put("lastName", user.getLastName());
+        payload.put("attributes", addAttributes(user));
         payload.put("enabled", true);
         payload.put("emailVerified", true);
         payload.put("credentials", List.of(credential));
 
         restTemplate.postForEntity(createUserUrl, new HttpEntity<>(payload, getAdminHttpHeaders()), Void.class);
-        addRoleToUser(signUpRequest);
+        addRoleToUser(role, user);
         return true;
     }
 
-    private void addRoleToUser(SignUpRequest signUpRequest) {
-        String getPatientRoleUrl = keycloakProperties.getServerUrl()
-                                   + "/admin/realms/"
-                                   + keycloakProperties.getRealm()
-                                   + "/roles/dental-clinic-patient";
+    private Map<String, String> addAttributes(User user) {
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("birthDate", user.getBirthDate().toString());
+        attributes.put("phoneNumber", user.getPhoneNumber());
+        if (user.getIsWorking() != null) {
+            attributes.put("isWorking", user.getIsWorking());
+        }
+        return attributes;
+    }
 
-        Map roleResponse = restTemplate.exchange(getPatientRoleUrl, HttpMethod.GET, new HttpEntity<>(getAdminHttpHeaders()), Map.class).getBody();
-        String roleId = (String) roleResponse.get("id");
-
-        String userId = (String) getUserByEmail(signUpRequest.getEmail()).get("id");
+    private void addRoleToUser(String role, User user) {
+        String roleId = (String) getRole(role).get("id");
+        String userId = (String) getUserByEmail(user.getEmail()).get("id");
 
         String roleMappingUrl = keycloakProperties.getServerUrl()
                                 + "/admin/realms/"
@@ -71,12 +83,21 @@ public class KeycloakService {
                                 + userId
                                 + "/role-mappings/realm";
 
-        Map<String, Object> role = new HashMap<>();
-        role.put("id", roleId);
-        role.put("name", "dental-clinic-patient");
+        Map<String, String> payload = new HashMap<>();
+        payload.put("id", roleId);
+        payload.put("name", role);
 
-        HttpEntity<List<Map<String, Object>>> roleRequestEntity = new HttpEntity<>(List.of(role), getAdminHttpHeaders());
-        restTemplate.postForEntity(roleMappingUrl, roleRequestEntity, Void.class);
+        restTemplate.postForEntity(roleMappingUrl, new HttpEntity<>(List.of(payload), getAdminHttpHeaders()), Void.class);
+    }
+
+    private Map<String, Object> getRole(String role) {
+        String getPatientRoleUrl = keycloakProperties.getServerUrl()
+                                   + "/admin/realms/"
+                                   + keycloakProperties.getRealm()
+                                   + "/roles/"
+                                   + role;
+
+        return restTemplate.exchange(getPatientRoleUrl, HttpMethod.GET, new HttpEntity<>(getAdminHttpHeaders()), Map.class).getBody();
     }
 
     private Map<String, Object> getUserByEmail(String email) {
@@ -87,7 +108,7 @@ public class KeycloakService {
 
         List users = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(getAdminHttpHeaders()), List.class).getBody();
         if (users != null && !users.isEmpty()) {
-            return (Map<String, Object>) users;
+            return (Map<String, Object>) users.getFirst();
         } else {
             throw new UserNotFoundException(email);
         }
