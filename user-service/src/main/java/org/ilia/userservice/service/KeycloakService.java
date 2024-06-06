@@ -1,6 +1,8 @@
 package org.ilia.userservice.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.configuration.KeycloakProperties;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
@@ -15,26 +17,23 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class KeycloakService {
 
     private final KeycloakProperties keycloakProperties;
     private final UserMapper userMapper;
+    private final Keycloak keycloak;
 
-    private final UsersResource usersResource;
-    private final ClientsResource clientsResource;
+    private UsersResource usersResource;
+    private ClientsResource clientsResource;
 
-    public KeycloakService(KeycloakProperties keycloakProperties, UserMapper userMapper, Keycloak keycloak) {
-        this.keycloakProperties = keycloakProperties;
-        this.userMapper = userMapper;
-
+    @PostConstruct
+    private void init() {
         RealmResource realmResource = keycloak.realm(keycloakProperties.getRealm());
         usersResource = realmResource.users();
         clientsResource = realmResource.clients();
@@ -48,7 +47,7 @@ public class KeycloakService {
         return createUser(userMapper.toUser(createUserRequest), "DOCTOR");
     }
 
-    public UUID createUser(User user, String role) {
+    private UUID createUser(User user, String role) {
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
@@ -71,23 +70,7 @@ public class KeycloakService {
     }
 
     public void deleteUser(String id) {
-        String currentUserId = Optional.of(SecurityContextHolder.getContext().getAuthentication().getPrincipal())
-                .map(DefaultOAuth2AuthenticatedPrincipal.class::cast)
-                .map(DefaultOAuth2AuthenticatedPrincipal::getName)
-                .get();
-        List<String> currentUserRoles = SecurityContextHolder.getContext()
-                .getAuthentication().getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(str -> str.replace("ROLE_", ""))
-                .toList();
-        List<String> userRolesOnDeletion = getUserRolesByUserId(id).stream()
-                .map(RoleRepresentation::getName)
-                .toList();
-
-        if ((currentUserRoles.contains("OWNER") && (userRolesOnDeletion.contains("PATIENT") || userRolesOnDeletion.contains("DOCTOR"))) ||
-            (currentUserRoles.contains("PATIENT") && userRolesOnDeletion.contains("PATIENT") && currentUserId.equals(id))) {
-            usersResource.delete(id).close();
-        }
+        usersResource.delete(id).close();
     }
 
     private Map<String, List<String>> addAttributes(User user) {
@@ -106,12 +89,12 @@ public class KeycloakService {
         usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
     }
 
-    private List<RoleRepresentation> getUserRolesByUserId(String id) {
+    public List<RoleRepresentation> getUserRolesByUserId(String id) {
         String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
         return usersResource.get(id).roles().clientLevel(clientUuid).listAll();
     }
 
-    private UserRepresentation getUserByEmail(String email) {
+    public UserRepresentation getUserByEmail(String email) {
         List<UserRepresentation> userRepresentations = usersResource.searchByEmail(email, true);
         if (userRepresentations.isEmpty()) {
             throw new UserNotFoundException("User not found by this email: " + email);
@@ -121,7 +104,6 @@ public class KeycloakService {
     }
 
     public String getAccessToken(LoginRequest loginRequest) {
-        getUserByEmail(loginRequest.getEmail());
         Keycloak tempKeycloak = Keycloak.getInstance(
                 keycloakProperties.getServerUrl(),
                 keycloakProperties.getRealm(),
