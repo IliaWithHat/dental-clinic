@@ -14,7 +14,6 @@ keycloak:
   password: ilia
   client-id: dental-clinic-client
   client-secret: St10t32DmZStwE04v4paHNUhC2AF8Ydf
-  grant_type: password
 
 server:
   port: 8010

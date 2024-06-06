@@ -11,11 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class KeycloakProperties {
 
-    String serverUrl;
-    String realm;
-    String clientId;
-    String clientSecret;
-    String email;
-    String password;
-    String grantType;
+    private String serverUrl;
+    private String realm;
+    private String clientId;
+    private String clientSecret;
+    private String email;
+    private String password;
 }
