@@ -84,6 +84,21 @@ services:
     networks:
       - backend
 
+  timeservice:
+    build: ../time-service
+    image: time-service-image
+    container_name: time-service-container
+    env_file: env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    ports:
+      - "8011:8011"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge

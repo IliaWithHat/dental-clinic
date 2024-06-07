@@ -13,4 +13,10 @@ cd user-service
 call ./gradlew.bat bootJar
 cd ..
 
+echo.
+echo Building time-service...
+cd time-service
+call ./gradlew.bat bootJar
+cd ..
+
 cd bat-files

@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://database:5432/dental-clinic-repository
+    username: postgres
+    password: postgres
+
+  security:
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: ${keycloak.server-url}/realms/${keycloak.realm}/protocol/openid-connect/token/introspect
+          client-id: ${keycloak.client-id}
+          client-secret: ${keycloak.client-secret}
+
+keycloak:
+  server-url: http://keycloak:8001
+  realm: dental-clinic-realm
+  client-id: dental-clinic-client
+  client-secret: St10t32DmZStwE04v4paHNUhC2AF8Ydf
+
+server:
+  port: 8011
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
