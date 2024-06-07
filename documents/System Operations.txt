@@ -47,13 +47,13 @@ WorkingTime {
 }
 
 POST /working-time
-void setWorkingTime(List<WorkingTime>) -> установить рабочее время врача
+void createWorkingTime(List<WorkingTime>) -> установить рабочее время врача
 
 DELETE /working-time/{doctorId}
 void deleteWorkingTime(Int doctorId) -> удалить рабочее время врача
 
 GET /working-time/{doctorId}
-List<WorkingTime> findAllWorkingTimeByDoctorId(Int doctorId) -> найти рабочее время врача
+List<WorkingTime> findByDoctorId(Int doctorId) -> найти рабочее время врача
 ------------------------------------------------------------------------------------------------------------------------
 
 
