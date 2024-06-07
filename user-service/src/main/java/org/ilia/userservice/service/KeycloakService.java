@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.keycloak.representations.idm.CredentialRepresentation.PASSWORD;
+
 @Service
 @RequiredArgsConstructor
 public class KeycloakService {
@@ -40,19 +42,8 @@ public class KeycloakService {
     }
 
     public String createUser(User user, Role role) {
-        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
-        credentialRepresentation.setTemporary(false);
-        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
-        credentialRepresentation.setValue(user.getPassword());
-
-        UserRepresentation userRepresentation = new UserRepresentation();
-        userRepresentation.setEmail(user.getEmail());
-        userRepresentation.setFirstName(user.getFirstName());
-        userRepresentation.setLastName(user.getLastName());
-        userRepresentation.setAttributes(addAttributes(user));
-        userRepresentation.setEnabled(true);
-        userRepresentation.setEmailVerified(true);
-        userRepresentation.setCredentials(List.of(credentialRepresentation));
+        UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
+        setCredentialsToUserRepresentation(user, userRepresentation);
 
         try (Response response = usersResource.create(userRepresentation)) {
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
@@ -61,8 +52,34 @@ public class KeycloakService {
         }
     }
 
+    public void updateUser(User user) {
+        UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
+        usersResource.get(user.getId()).update(userRepresentation);
+    }
+
     public void deleteUser(String id) {
         usersResource.delete(id).close();
+    }
+
+    private UserRepresentation mapUserToUserRepresentation(User user) {
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setEmail(user.getEmail());
+        userRepresentation.setFirstName(user.getFirstName());
+        userRepresentation.setLastName(user.getLastName());
+        userRepresentation.setAttributes(addAttributes(user));
+        userRepresentation.setEnabled(true);
+        userRepresentation.setEmailVerified(true);
+
+        return userRepresentation;
+    }
+
+    private void setCredentialsToUserRepresentation(User user, UserRepresentation userRepresentation) {
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setTemporary(false);
+        credentialRepresentation.setType(PASSWORD);
+        credentialRepresentation.setValue(user.getPassword());
+
+        userRepresentation.setCredentials(List.of(credentialRepresentation));
     }
 
     private Map<String, List<String>> addAttributes(User user) {
@@ -81,7 +98,7 @@ public class KeycloakService {
         usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
     }
 
-    public RoleRepresentation getUserRolesByUserId(String id) {
+    public RoleRepresentation getUserRoleByUserId(String id) {
         String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
         return usersResource.get(id).roles().clientLevel(clientUuid).listAll().getFirst();
     }

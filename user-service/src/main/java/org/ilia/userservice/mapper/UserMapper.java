@@ -2,6 +2,7 @@ package org.ilia.userservice.mapper;
 
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
+import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -31,6 +32,10 @@ public interface UserMapper {
     @Mapping(target = "password", expression = "java(\"<secured>\")")
     @Mapping(target = "role", source = "role")
     User toUser(UserRepresentation userRepresentation, Role role, String id);
+
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    User toUser(UpdateUserRequest updateUserRequest);
 
     default String getValueFromMap(String param, Map<String, List<String>> map) {
         List<String> value = map.get(param);

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
+import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.service.UserService;
@@ -27,6 +28,11 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> create(@RequestBody CreateUserRequest createUserRequest) {
         return ResponseEntity.status(CREATED).body(userService.create(createUserRequest));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> update(@RequestBody UpdateUserRequest updateUserRequest) {
+        return ResponseEntity.ok().body(userService.update(updateUserRequest));
     }
 
     @PostMapping("/login")

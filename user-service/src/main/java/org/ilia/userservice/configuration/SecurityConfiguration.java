@@ -39,6 +39,8 @@ public class SecurityConfiguration {
                                 "v1/user/signUp", "/v1/user/login").permitAll()
                         .requestMatchers(GET,
                                 "/v1/user/{id}").authenticated()
+                        .requestMatchers(PUT,
+                                "/v1/user/{id}").authenticated()
                         .requestMatchers(DELETE,
                                 "v1/user/{id}").authenticated()
                         .requestMatchers(POST,

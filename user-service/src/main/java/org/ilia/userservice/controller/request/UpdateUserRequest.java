@@ -1,12 +1,11 @@
-package org.ilia.userservice.entity;
+package org.ilia.userservice.controller.request;
 
 import lombok.Data;
-import org.ilia.userservice.enums.Role;
 
 import java.time.LocalDate;
 
 @Data
-public class User {
+public class UpdateUserRequest {
 
     private String id;
     private String email;
@@ -15,6 +14,4 @@ public class User {
     private LocalDate birthDate;
     private String phoneNumber;
     private String isWorking;
-    private String password;
-    private Role role;
 }

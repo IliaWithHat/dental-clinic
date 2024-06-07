@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
+import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
@@ -14,8 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 
-import static org.ilia.userservice.enums.Role.DOCTOR;
-import static org.ilia.userservice.enums.Role.PATIENT;
+import static org.ilia.userservice.enums.Role.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,29 +34,42 @@ public class UserService {
         return findById(userId);
     }
 
+    public User update(UpdateUserRequest updateUserRequest) {
+        if (isAllowedActionOnThisUser(updateUserRequest.getId())) {
+            keycloakService.updateUser(userMapper.toUser(updateUserRequest));
+            return findById(updateUserRequest.getId());
+        }
+        throw new RuntimeException();
+    }
+
     public LoginResponse login(LoginRequest loginRequest) {
         keycloakService.getUserByEmail(loginRequest.getEmail());
         return new LoginResponse(keycloakService.getAccessToken(loginRequest));
     }
 
     public User findById(String id) {
-        Role role = Role.valueOf(keycloakService.getUserRolesByUserId(id).getName());
+        Role role = Role.valueOf(keycloakService.getUserRoleByUserId(id).getName());
         return userMapper.toUser(keycloakService.getUserById(id), role, id);
     }
 
     public void delete(String id) {
+        if (isAllowedActionOnThisUser(id)) {
+            keycloakService.deleteUser(id);
+        }
+    }
+
+    private boolean isAllowedActionOnThisUser(String userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String currentUserId = ((DefaultOAuth2AuthenticatedPrincipal) authentication.getPrincipal()).getName();
-        String currentUserRoles = authentication.getAuthorities().stream()
+        Role currentUserRole = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(str -> str.replace("ROLE_", ""))
+                .map(Role::valueOf)
                 .toList().getFirst();
-        String userRolesOnDeletion = keycloakService.getUserRolesByUserId(id).getName();
+        Role targetUserRole = Role.valueOf(keycloakService.getUserRoleByUserId(userId).getName());
 
-        if ((currentUserRoles.equals("OWNER") && (userRolesOnDeletion.equals("PATIENT") || userRolesOnDeletion.equals("DOCTOR"))) ||
-            (currentUserRoles.equals("PATIENT") && userRolesOnDeletion.equals("PATIENT") && currentUserId.equals(id))) {
-            keycloakService.deleteUser(id);
-        }
+        return (currentUserRole.equals(OWNER) && (targetUserRole.equals(PATIENT) || targetUserRole.equals(DOCTOR))) ||
+               (currentUserRole.equals(PATIENT) && targetUserRole.equals(PATIENT) && currentUserId.equals(userId));
     }
 }
