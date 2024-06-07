@@ -5,10 +5,11 @@ services:
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "dental-clinic-repository"
+      POSTGRES_DB: "dental_clinic_repository"
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - ./sql/keycloak.sql:/docker-entrypoint-initdb.d/1-keycloak.sql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/2-init.sql
       - dental-clinic-data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
