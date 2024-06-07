@@ -17,7 +17,10 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +39,7 @@ public class KeycloakService {
         clientsResource = realmResource.clients();
     }
 
-    public UUID createUser(User user, Role role) {
+    public String createUser(User user, Role role) {
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
@@ -54,7 +57,7 @@ public class KeycloakService {
         try (Response response = usersResource.create(userRepresentation)) {
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             addRoleToUser(role, userId);
-            return UUID.fromString(userId);
+            return userId;
         }
     }
 
@@ -78,9 +81,9 @@ public class KeycloakService {
         usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
     }
 
-    public List<RoleRepresentation> getUserRolesByUserId(String id) {
+    public RoleRepresentation getUserRolesByUserId(String id) {
         String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
-        return usersResource.get(id).roles().clientLevel(clientUuid).listAll();
+        return usersResource.get(id).roles().clientLevel(clientUuid).listAll().getFirst();
     }
 
     public UserRepresentation getUserByEmail(String email) {

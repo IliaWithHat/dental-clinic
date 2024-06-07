@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.SignUpRequest;
-import org.ilia.userservice.controller.response.CreateUserResponse;
 import org.ilia.userservice.controller.response.LoginResponse;
-import org.ilia.userservice.controller.response.SignUpResponse;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +20,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signUp")
-    public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<User> signUp(@RequestBody SignUpRequest signUpRequest) {
         return ResponseEntity.status(CREATED).body(userService.signUp(signUpRequest));
     }
 
     @PostMapping
-    public ResponseEntity<CreateUserResponse> create(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<User> create(@RequestBody CreateUserRequest createUserRequest) {
         return ResponseEntity.status(CREATED).body(userService.create(createUserRequest));
     }
 
