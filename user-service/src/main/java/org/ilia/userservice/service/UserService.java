@@ -9,11 +9,12 @@ import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.mapper.UserMapper;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import static org.ilia.userservice.enums.Role.*;
 
@@ -52,6 +53,15 @@ public class UserService {
         return userMapper.toUser(keycloakService.getUserById(id), role, id);
     }
 
+    public List<User> findByRole(Role role) {
+        if (getCurrentUserRole().equals(OWNER) && (role.equals(PATIENT) || role.equals(DOCTOR))) {
+            return keycloakService.getUsersByRole(role).stream()
+                    .map(user -> userMapper.toUser(user, role, user.getId()))
+                    .toList();
+        }
+        throw new RuntimeException();
+    }
+
     public void delete(String id) {
         if (isAllowedActionOnThisUser(id)) {
             keycloakService.deleteUser(id);
@@ -59,17 +69,19 @@ public class UserService {
     }
 
     private boolean isAllowedActionOnThisUser(String userId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String currentUserId = ((DefaultOAuth2AuthenticatedPrincipal) authentication.getPrincipal()).getName();
-        Role currentUserRole = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(str -> str.replace("ROLE_", ""))
-                .map(Role::valueOf)
-                .toList().getFirst();
+        String currentUserId = ((DefaultOAuth2AuthenticatedPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
+        Role currentUserRole = getCurrentUserRole();
         Role targetUserRole = Role.valueOf(keycloakService.getUserRoleByUserId(userId).getName());
 
         return (currentUserRole.equals(OWNER) && (targetUserRole.equals(PATIENT) || targetUserRole.equals(DOCTOR))) ||
                (currentUserRole.equals(PATIENT) && targetUserRole.equals(PATIENT) && currentUserId.equals(userId));
+    }
+
+    private Role getCurrentUserRole() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(str -> str.replace("ROLE_", ""))
+                .map(Role::valueOf)
+                .toList().getFirst();
     }
 }

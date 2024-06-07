@@ -116,6 +116,11 @@ public class KeycloakService {
         return usersResource.get(id).toRepresentation();
     }
 
+    public List<UserRepresentation> getUsersByRole(Role role) {
+        String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
+        return clientsResource.get(clientUuid).roles().get(role.name()).getUserMembers();
+    }
+
     public String getAccessToken(LoginRequest loginRequest) {
         Keycloak tempKeycloak = Keycloak.getInstance(
                 keycloakProperties.getServerUrl(),

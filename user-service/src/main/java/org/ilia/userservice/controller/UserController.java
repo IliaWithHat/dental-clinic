@@ -7,9 +7,13 @@ import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.entity.User;
+import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -43,6 +47,12 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable String id) {
         return ResponseEntity.ok().body(userService.findById(id));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<List<User>> findByRole(@RequestParam Role role) {
+        return ResponseEntity.ok().body(userService.findByRole(role));
     }
 
     @DeleteMapping("/{id}")
