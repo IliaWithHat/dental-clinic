@@ -3,6 +3,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/dental-clinic-repository
     username: postgres
     password: postgres
+  jpa:
+    open-in-view: false
 
   security:
     oauth2:

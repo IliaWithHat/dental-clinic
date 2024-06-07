@@ -1,4 +1,4 @@
-package org.ilia.userservice.configuration;
+package org.ilia.timeservice.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.ilia.userservice.enums.Role.OWNER;
-import static org.springframework.http.HttpMethod.*;
+import static org.ilia.timeservice.enums.Role.OWNER;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -36,16 +35,7 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(POST,
-                                "v1/user/signUp", "/v1/user/login").permitAll()
-                        .requestMatchers(GET,
-                                "v1/user", "/v1/user/{id}").authenticated()
-                        .requestMatchers(PUT,
-                                "/v1/user/{id}").authenticated()
-                        .requestMatchers(DELETE,
-                                "v1/user/{id}").authenticated()
-                        .requestMatchers(POST,
-                                "v1/user").hasRole(OWNER.name())
+                        .requestMatchers("/v1/working-time/**").hasRole(OWNER.name())
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
