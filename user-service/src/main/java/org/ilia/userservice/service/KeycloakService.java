@@ -43,7 +43,7 @@ public class KeycloakService {
 
     public String createUser(User user, Role role) {
         UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
-        setCredentialsToUserRepresentation(user, userRepresentation);
+        setCredentialsToUserRepresentation(user.getPassword(), userRepresentation);
 
         try (Response response = usersResource.create(userRepresentation)) {
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
@@ -73,11 +73,11 @@ public class KeycloakService {
         return userRepresentation;
     }
 
-    private void setCredentialsToUserRepresentation(User user, UserRepresentation userRepresentation) {
+    private void setCredentialsToUserRepresentation(String password, UserRepresentation userRepresentation) {
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setType(PASSWORD);
-        credentialRepresentation.setValue(user.getPassword());
+        credentialRepresentation.setValue(password);
 
         userRepresentation.setCredentials(List.of(credentialRepresentation));
     }

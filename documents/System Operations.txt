@@ -84,9 +84,6 @@ void deleteAppointment(Int appointmentId) -> удалить запись
 GET /{role}/{patientId}/appointment
 List<Appointment> findAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
 
-GET /{role}/{doctorId}/appointment?state=occupied
-List<Appointment> findAllOccupiedAppointmentsByDoctorId(Int doctorId) -> найти все занятые записи к врачу
-
 GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=occupied
 List<Appointment> findAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
 к врачу по заданному диапазону
