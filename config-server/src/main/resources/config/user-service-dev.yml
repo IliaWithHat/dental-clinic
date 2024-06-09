@@ -15,6 +15,13 @@ keycloak:
   client-id: dental-clinic-client
   client-secret: St10t32DmZStwE04v4paHNUhC2AF8Ydf
 
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8002/eureka/
+
 server:
   port: 8010
 
