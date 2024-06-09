@@ -8,7 +8,7 @@ import org.ilia.timeservice.enums.Day;
 
 import java.time.LocalTime;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
+import static jakarta.persistence.GenerationType.UUID;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +17,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class WorkingTime {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = UUID)
     private Integer id;
 
     @Enumerated(EnumType.STRING)

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -24,18 +25,18 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping
-    public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentRequest appointment,
+    public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentRequest createAppointmentRequest,
                                               @PathVariable @RightRole Role role,
                                               @PathVariable String userId) {
-        return ResponseEntity.status(CREATED).body(appointmentService.create(appointment, role, userId));
+        return ResponseEntity.status(CREATED).body(appointmentService.create(createAppointmentRequest, role, userId));
     }
 
     @PutMapping("/{appointmentId}")
-    public ResponseEntity<Appointment> update(@RequestBody UpdateAppointmentRequest appointment,
-                                              @PathVariable String appointmentId,
+    public ResponseEntity<Appointment> update(@RequestBody UpdateAppointmentRequest updateAppointmentRequest,
+                                              @PathVariable UUID appointmentId,
                                               @PathVariable @RightRole Role role,
                                               @PathVariable String userId) {
-        return ResponseEntity.ok().body(appointmentService.update(appointment, appointmentId, role, userId));
+        return ResponseEntity.ok().body(appointmentService.update(updateAppointmentRequest, appointmentId, role, userId));
     }
 
     @GetMapping
@@ -47,7 +48,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{appointmentId}")
-    public ResponseEntity<?> delete(@PathVariable String appointmentId,
+    public ResponseEntity<?> delete(@PathVariable UUID appointmentId,
                                     @PathVariable @RightRole Role role,
                                     @PathVariable String userId) {
         appointmentService.delete(appointmentId, role, userId);

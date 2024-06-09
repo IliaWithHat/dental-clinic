@@ -1,6 +1,6 @@
 CREATE TABLE working_time
 (
-    id                       SERIAL PRIMARY KEY,
+    id                       UUID PRIMARY KEY,
     day                      VARCHAR(10) NOT NULL,
     start_time               TIME        NOT NULL,
     end_time                 TIME        NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE working_time
 
 CREATE TABLE appointment
 (
-    id              SERIAL PRIMARY KEY,
+    id              UUID PRIMARY KEY,
     date            TIMESTAMP NOT NULL,
     is_patient_come BOOLEAN,
     service_info    VARCHAR(256),
