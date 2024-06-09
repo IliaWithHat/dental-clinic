@@ -2,6 +2,7 @@ package org.ilia.appointmentservice.mapper;
 
 import org.ilia.appointmentservice.controller.request.CreateAppointmentRequest;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
+import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
 import org.ilia.appointmentservice.entity.Appointment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,4 +22,6 @@ public interface AppointmentMapper {
     @Mapping(target = "patientId", ignore = true)
     @Mapping(target = "doctorId", ignore = true)
     Appointment updateAppointment(UpdateAppointmentRequest updateAppointmentRequest, @MappingTarget Appointment appointment);
+
+    FindAppointmentResponse toFindAppointmentResponse(Appointment appointment);
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static org.ilia.timeservice.enums.Role.OWNER;
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -33,7 +34,15 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/v1/working-time/**").hasRole(OWNER.name())
+
+                        .requestMatchers(GET,
+                                "/v1/working-time/{doctorId}").authenticated()
+
+                        .requestMatchers(POST,
+                                "/v1/working-time").hasRole(OWNER.name())
+                        .requestMatchers(DELETE,
+                                "/v1/working-time/{doctorId}").hasRole(OWNER.name())
+
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))

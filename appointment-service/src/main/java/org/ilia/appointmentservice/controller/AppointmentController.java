@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.ilia.appointmentservice.controller.request.CreateAppointmentRequest;
 import org.ilia.appointmentservice.controller.request.DateRange;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
+import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
 import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
@@ -40,10 +41,10 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Appointment>> find(@RequestParam(required = false) DateRange dateRange,
-                                                  @RequestParam(required = false) State state,
-                                                  @PathVariable @RightRole Role role,
-                                                  @PathVariable UUID userId) {
+    public ResponseEntity<List<FindAppointmentResponse>> find(@RequestParam(required = false) DateRange dateRange,
+                                                              @RequestParam(required = false, defaultValue = "occupied") State state,
+                                                              @PathVariable @RightRole Role role,
+                                                              @PathVariable UUID userId) {
         return ResponseEntity.ok().body(appointmentService.find(dateRange, state, role, userId));
     }
 
