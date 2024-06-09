@@ -29,7 +29,7 @@ public class Appointment {
 
     private Integer price;
 
-    private Integer patientId;
+    private UUID patientId;
 
-    private Integer doctorId;
+    private UUID doctorId;
 }

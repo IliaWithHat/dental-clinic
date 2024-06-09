@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import org.ilia.timeservice.enums.Day;
 
 import java.time.LocalTime;
-
-import static jakarta.persistence.GenerationType.UUID;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -17,8 +16,8 @@ import static jakarta.persistence.GenerationType.UUID;
 public class WorkingTime {
 
     @Id
-    @GeneratedValue(strategy = UUID)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     private Day day;
@@ -29,5 +28,5 @@ public class WorkingTime {
 
     private Integer timeIntervalInMinutes;
 
-    private Integer doctorId;
+    private UUID doctorId;
 }

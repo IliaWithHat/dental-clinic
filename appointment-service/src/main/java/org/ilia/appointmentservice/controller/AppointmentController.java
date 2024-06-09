@@ -27,7 +27,7 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentRequest createAppointmentRequest,
                                               @PathVariable @RightRole Role role,
-                                              @PathVariable String userId) {
+                                              @PathVariable UUID userId) {
         return ResponseEntity.status(CREATED).body(appointmentService.create(createAppointmentRequest, role, userId));
     }
 
@@ -35,7 +35,7 @@ public class AppointmentController {
     public ResponseEntity<Appointment> update(@RequestBody UpdateAppointmentRequest updateAppointmentRequest,
                                               @PathVariable UUID appointmentId,
                                               @PathVariable @RightRole Role role,
-                                              @PathVariable String userId) {
+                                              @PathVariable UUID userId) {
         return ResponseEntity.ok().body(appointmentService.update(updateAppointmentRequest, appointmentId, role, userId));
     }
 
@@ -43,14 +43,14 @@ public class AppointmentController {
     public ResponseEntity<List<Appointment>> find(@RequestParam(required = false) DateRange dateRange,
                                                   @RequestParam(required = false) State state,
                                                   @PathVariable @RightRole Role role,
-                                                  @PathVariable String userId) {
+                                                  @PathVariable UUID userId) {
         return ResponseEntity.ok().body(appointmentService.find(dateRange, state, role, userId));
     }
 
     @DeleteMapping("/{appointmentId}")
     public ResponseEntity<?> delete(@PathVariable UUID appointmentId,
                                     @PathVariable @RightRole Role role,
-                                    @PathVariable String userId) {
+                                    @PathVariable UUID userId) {
         appointmentService.delete(appointmentId, role, userId);
         return ResponseEntity.ok().build();
     }
