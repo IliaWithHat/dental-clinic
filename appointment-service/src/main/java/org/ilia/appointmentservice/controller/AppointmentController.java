@@ -7,42 +7,50 @@ import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
 import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
+import org.ilia.appointmentservice.service.AppointmentService;
 import org.ilia.appointmentservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/v1/{role}/{userId}/appointment")
 @RequiredArgsConstructor
 public class AppointmentController {
 
+    private final AppointmentService appointmentService;
+
     @PostMapping
-    public ResponseEntity<Appointment> create(@PathVariable @RightRole Role role,
-                                              @PathVariable String userId,
-                                              @RequestBody CreateAppointmentRequest appointment) {
-        return null;
+    public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentRequest appointment,
+                                              @PathVariable @RightRole Role role,
+                                              @PathVariable String userId) {
+        return ResponseEntity.status(CREATED).body(appointmentService.create(appointment, role, userId));
     }
 
     @PutMapping("/{appointmentId}")
-    public ResponseEntity<Appointment> update(@PathVariable @RightRole Role role,
-                                              @PathVariable String userId,
+    public ResponseEntity<Appointment> update(@RequestBody UpdateAppointmentRequest appointment,
                                               @PathVariable String appointmentId,
-                                              @RequestBody UpdateAppointmentRequest appointment) {
-        return null;
+                                              @PathVariable @RightRole Role role,
+                                              @PathVariable String userId) {
+        return ResponseEntity.ok().body(appointmentService.update(appointment, appointmentId, role, userId));
     }
 
     @GetMapping
-    public ResponseEntity<Appointment> find(@PathVariable @RightRole Role role,
-                                            @PathVariable String userId,
-                                            @RequestParam(required = false) DateRange dateRange,
-                                            @RequestParam(required = false) State state) {
-        return null;
+    public ResponseEntity<List<Appointment>> find(@RequestParam(required = false) DateRange dateRange,
+                                                  @RequestParam(required = false) State state,
+                                                  @PathVariable @RightRole Role role,
+                                                  @PathVariable String userId) {
+        return ResponseEntity.ok().body(appointmentService.find(dateRange, state, role, userId));
     }
 
     @DeleteMapping("/{appointmentId}")
-    public ResponseEntity<Appointment> delete(@PathVariable @RightRole Role role,
-                                              @PathVariable String userId,
-                                              @PathVariable String appointmentId) {
-        return null;
+    public ResponseEntity<?> delete(@PathVariable String appointmentId,
+                                    @PathVariable @RightRole Role role,
+                                    @PathVariable String userId) {
+        appointmentService.delete(appointmentId, role, userId);
+        return ResponseEntity.ok().build();
     }
 }
