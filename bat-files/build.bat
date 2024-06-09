@@ -19,4 +19,10 @@ cd time-service
 call ./gradlew.bat bootJar
 cd ..
 
+echo.
+echo Building appointment-service...
+cd appointment-service
+call ./gradlew.bat bootJar
+cd ..
+
 cd bat-files

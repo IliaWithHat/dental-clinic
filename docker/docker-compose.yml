@@ -100,6 +100,21 @@ services:
     networks:
       - backend
 
+  appointmentservice:
+    build: ../appointment-service
+    image: appointment-service-image
+    container_name: appointment-service-container
+    env_file: env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    ports:
+      - "8012:8012"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge
