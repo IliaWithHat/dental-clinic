@@ -23,6 +23,22 @@ services:
         aliases:
           - "database"
 
+  configserver:
+    build: ../config-server
+    image: config-server-image
+    container_name: config-server-container
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fs localhost:8000/actuator/health | grep UP || exit 1" ]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "8000:8000"
+    networks:
+      backend:
+        aliases:
+          - "configserver"
+
   keycloak:
     image: bitnami/keycloak:24.0.4
     container_name: keycloak-container
@@ -56,21 +72,20 @@ services:
         aliases:
           - "keycloak"
 
-  configserver:
-    build: ../config-server
-    image: config-server-image
-    container_name: config-server-container
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -fs localhost:8000/actuator/health | grep UP || exit 1" ]
-      interval: 2s
-      timeout: 3s
-      retries: 10
+  eurekaserver:
+    build: ../eureka-server
+    image: eureka-server-image
+    container_name: eureka-server-container
+    env_file: env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
     ports:
-      - "8000:8000"
+      - "8002:8002"
     networks:
       backend:
         aliases:
-          - "configserver"
+          - "eurekaserver"
 
   userservice:
     build: ../user-service
