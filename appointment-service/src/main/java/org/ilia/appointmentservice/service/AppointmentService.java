@@ -10,6 +10,7 @@ import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -23,6 +24,7 @@ import static org.ilia.appointmentservice.enums.State.OCCUPIED;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;

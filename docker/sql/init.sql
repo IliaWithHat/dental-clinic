@@ -5,7 +5,7 @@ CREATE TABLE working_time
     start_time               TIME        NOT NULL,
     end_time                 TIME        NOT NULL,
     time_interval_in_minutes INT         NOT NULL,
-    doctor_id                INT         NOT NULL
+    doctor_id                UUID        NOT NULL
 );
 
 CREATE TABLE appointment
@@ -15,6 +15,6 @@ CREATE TABLE appointment
     is_patient_come BOOLEAN,
     service_info    VARCHAR(256),
     price           INT,
-    patient_id      INT       NOT NULL,
-    doctor_id       INT       NOT NULL
+    patient_id      UUID      NOT NULL,
+    doctor_id       UUID      NOT NULL
 );

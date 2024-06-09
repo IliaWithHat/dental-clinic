@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrinci
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.ilia.userservice.enums.Role.*;
 
@@ -25,7 +26,7 @@ public class UserService {
     private final UserMapper userMapper;
 
     public User create(CreateUserRequest createUserRequest, Role role) {
-        String userId = keycloakService.createUser(userMapper.toUser(createUserRequest), role);
+        UUID userId = keycloakService.createUser(userMapper.toUser(createUserRequest), role);
         return findById(userId, role);
     }
 
@@ -42,24 +43,26 @@ public class UserService {
         return new LoginResponse(keycloakService.getAccessToken(loginRequest));
     }
 
-    public User findById(String id, Role role) {
-        return userMapper.toUser(keycloakService.getUserById(id), role, id);
+    public User findById(UUID userId, Role role) {
+        return userMapper.toUser(keycloakService.getUserById(userId), role, userId);
     }
 
     public List<User> findByRole(Role role) {
         return keycloakService.getUsersByRole(role).stream()
-                .map(user -> userMapper.toUser(user, role, user.getId()))
+                .map(user -> userMapper.toUser(user, role, UUID.fromString(user.getId())))
                 .toList();
     }
 
-    public void delete(String id, Role role) {
-        if (isAllowedActionOnThisUser(id, role)) {
-            keycloakService.deleteUser(id);
+    public void delete(UUID userId, Role role) {
+        if (isAllowedActionOnThisUser(userId, role)) {
+            keycloakService.deleteUser(userId);
         }
     }
 
-    private boolean isAllowedActionOnThisUser(String userId, Role targetUserRole) {
-        String currentUserId = ((DefaultOAuth2AuthenticatedPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
+    private boolean isAllowedActionOnThisUser(UUID userId, Role targetUserRole) {
+        UUID currentUserId = UUID.fromString(((DefaultOAuth2AuthenticatedPrincipal) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal())
+                .getName());
         Role currentUserRole = getCurrentUserRole();
 
         return (currentUserRole.equals(OWNER) && (targetUserRole.equals(PATIENT) || targetUserRole.equals(DOCTOR))) ||

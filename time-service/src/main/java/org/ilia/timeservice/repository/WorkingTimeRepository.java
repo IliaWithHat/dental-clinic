@@ -10,7 +10,7 @@ import java.util.UUID;
 @Repository
 public interface WorkingTimeRepository extends JpaRepository<WorkingTime, UUID> {
 
-    List<WorkingTime> findByDoctorId(Integer doctorId);
+    List<WorkingTime> findByDoctorId(UUID doctorId);
 
-    void deleteByDoctorId(Integer doctorId);
+    void deleteByDoctorId(UUID doctorId);
 }

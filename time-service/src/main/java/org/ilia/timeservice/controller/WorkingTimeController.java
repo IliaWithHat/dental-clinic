@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -19,7 +20,7 @@ public class WorkingTimeController {
     private final WorkingTimeService workingTimeService;
 
     @GetMapping("/{doctorId}")
-    public ResponseEntity<List<WorkingTime>> findByDoctorId(@PathVariable Integer doctorId) {
+    public ResponseEntity<List<WorkingTime>> findByDoctorId(@PathVariable UUID doctorId) {
         return ResponseEntity.ok().body(workingTimeService.findByDoctorId(doctorId));
     }
 
@@ -29,7 +30,7 @@ public class WorkingTimeController {
     }
 
     @DeleteMapping("/{doctorId}")
-    public ResponseEntity<?> delete(@PathVariable Integer doctorId) {
+    public ResponseEntity<?> delete(@PathVariable UUID doctorId) {
         workingTimeService.deleteByDoctorId(doctorId);
         return ResponseEntity.ok().build();
     }

@@ -1,7 +1,6 @@
 package org.ilia.userservice.mapper;
 
 import org.ilia.userservice.controller.request.CreateUserRequest;
-import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
@@ -12,6 +11,7 @@ import org.mapstruct.Mapping;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -20,18 +20,13 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     User toUser(CreateUserRequest createUserRequest);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", ignore = true)
-    @Mapping(target = "isWorking", ignore = true)
-    User toUser(SignUpRequest signUpRequest);
-
     @Mapping(target = "id", source = "id")
     @Mapping(target = "birthDate", expression = "java(getLocalDateFromMap(\"birthDate\", userRepresentation.getAttributes()))")
     @Mapping(target = "isWorking", expression = "java(getValueFromMap(\"isWorking\", userRepresentation.getAttributes()))")
     @Mapping(target = "phoneNumber", expression = "java(getValueFromMap(\"phoneNumber\", userRepresentation.getAttributes()))")
     @Mapping(target = "password", expression = "java(\"<secured>\")")
     @Mapping(target = "role", source = "role")
-    User toUser(UserRepresentation userRepresentation, Role role, String id);
+    User toUser(UserRepresentation userRepresentation, Role role, UUID id);
 
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "role", ignore = true)

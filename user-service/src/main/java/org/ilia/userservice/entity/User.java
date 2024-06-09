@@ -4,11 +4,12 @@ import lombok.Data;
 import org.ilia.userservice.enums.Role;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 public class User {
 
-    private String id;
+    private UUID id;
     private String email;
     private String firstName;
     private String lastName;

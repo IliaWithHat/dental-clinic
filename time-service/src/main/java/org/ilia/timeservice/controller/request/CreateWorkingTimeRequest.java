@@ -4,6 +4,7 @@ import lombok.Data;
 import org.ilia.timeservice.enums.Day;
 
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Data
 public class CreateWorkingTimeRequest {
@@ -12,5 +13,5 @@ public class CreateWorkingTimeRequest {
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer timeIntervalInMinutes;
-    private Integer doctorId;
+    private UUID doctorId;
 }

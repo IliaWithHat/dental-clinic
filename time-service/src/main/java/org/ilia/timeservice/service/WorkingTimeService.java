@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class WorkingTimeService {
     private final WorkingTimeRepository workingTimeRepository;
     private final WorkingTimeMapper workingTimeMapper;
 
-    public List<WorkingTime> findByDoctorId(Integer doctorId) {
+    public List<WorkingTime> findByDoctorId(UUID doctorId) {
         return workingTimeRepository.findByDoctorId(doctorId);
     }
 
@@ -29,7 +30,7 @@ public class WorkingTimeService {
                 .toList();
     }
 
-    public void deleteByDoctorId(Integer doctorId) {
+    public void deleteByDoctorId(UUID doctorId) {
         workingTimeRepository.deleteByDoctorId(doctorId);
     }
 }

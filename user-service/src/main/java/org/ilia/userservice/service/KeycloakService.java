@@ -17,10 +17,7 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.keycloak.representations.idm.CredentialRepresentation.PASSWORD;
 
@@ -41,24 +38,24 @@ public class KeycloakService {
         clientsResource = realmResource.clients();
     }
 
-    public String createUser(User user, Role role) {
+    public UUID createUser(User user, Role role) {
         UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
         setCredentialsToUserRepresentation(user.getPassword(), userRepresentation);
 
         try (Response response = usersResource.create(userRepresentation)) {
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             addRoleToUser(role, userId);
-            return userId;
+            return UUID.fromString(userId);
         }
     }
 
     public void updateUser(User user) {
         UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
-        usersResource.get(user.getId()).update(userRepresentation);
+        usersResource.get(user.getId().toString()).update(userRepresentation);
     }
 
-    public void deleteUser(String id) {
-        usersResource.delete(id).close();
+    public void deleteUser(UUID id) {
+        usersResource.delete(id.toString()).close();
     }
 
     private UserRepresentation mapUserToUserRepresentation(User user) {
@@ -107,8 +104,8 @@ public class KeycloakService {
         }
     }
 
-    public UserRepresentation getUserById(String id) {
-        return usersResource.get(id).toRepresentation();
+    public UserRepresentation getUserById(UUID id) {
+        return usersResource.get(id.toString()).toRepresentation();
     }
 
     public List<UserRepresentation> getUsersByRole(Role role) {

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -42,7 +43,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable String id,
+    public ResponseEntity<User> findById(@PathVariable UUID id,
                                          @PathVariable @RightRole Role role) {
         return ResponseEntity.ok().body(userService.findById(id, role));
     }
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id,
+    public ResponseEntity<?> delete(@PathVariable UUID id,
                                     @PathVariable @RightRole Role role) {
         userService.delete(id, role);
         return ResponseEntity.ok().build();
