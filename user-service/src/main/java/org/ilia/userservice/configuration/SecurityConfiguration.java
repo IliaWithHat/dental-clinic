@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,7 +27,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfiguration {
 
     @Bean
@@ -36,16 +34,22 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**").permitAll()
+
                         .requestMatchers(POST,
-                                "v1/user/signUp", "/v1/user/login").permitAll()
+                                "/v1/{role}/login").permitAll()
+
                         .requestMatchers(GET,
-                                "v1/user", "/v1/user/{id}").authenticated()
+                                "/v1/{role}/{id}").authenticated()
                         .requestMatchers(PUT,
-                                "/v1/user/{id}").authenticated()
+                                "/v1/{role}/{id}").authenticated()
                         .requestMatchers(DELETE,
-                                "v1/user/{id}").authenticated()
+                                "v1/{role}/{id}").authenticated()
+
+                        .requestMatchers(GET,
+                                "v1/{role}").hasRole(OWNER.name())
                         .requestMatchers(POST,
-                                "v1/user").hasRole(OWNER.name())
+                                "v1/{role}").hasRole(OWNER.name())
+
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))

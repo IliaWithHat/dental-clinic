@@ -3,7 +3,6 @@ package org.ilia.userservice.service;
 import lombok.RequiredArgsConstructor;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
-import org.ilia.userservice.controller.request.SignUpRequest;
 import org.ilia.userservice.controller.request.UpdateUserRequest;
 import org.ilia.userservice.controller.response.LoginResponse;
 import org.ilia.userservice.entity.User;
@@ -25,13 +24,8 @@ public class UserService {
     private final KeycloakService keycloakService;
     private final UserMapper userMapper;
 
-    public User signUp(SignUpRequest signUpRequest) {
-        String userId = keycloakService.createUser(userMapper.toUser(signUpRequest), PATIENT);
-        return findById(userId);
-    }
-
-    public User create(CreateUserRequest createUserRequest) {
-        String userId = keycloakService.createUser(userMapper.toUser(createUserRequest), DOCTOR);
+    public User create(CreateUserRequest createUserRequest, Role role) {
+        String userId = keycloakService.createUser(userMapper.toUser(createUserRequest), role);
         return findById(userId);
     }
 
@@ -54,12 +48,9 @@ public class UserService {
     }
 
     public List<User> findByRole(Role role) {
-        if (getCurrentUserRole().equals(OWNER) && (role.equals(PATIENT) || role.equals(DOCTOR))) {
-            return keycloakService.getUsersByRole(role).stream()
-                    .map(user -> userMapper.toUser(user, role, user.getId()))
-                    .toList();
-        }
-        throw new RuntimeException();
+        return keycloakService.getUsersByRole(role).stream()
+                .map(user -> userMapper.toUser(user, role, user.getId()))
+                .toList();
     }
 
     public void delete(String id) {

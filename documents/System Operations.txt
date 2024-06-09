@@ -15,23 +15,22 @@ Token {
     String accessToken
 }
 
-POST /user/login
+POST /{role}/login
 Token login(User) -> аутентификация пользователя
 
-POST /user/signUp
-POST /user
+POST /{role}
 User createUser(User) -> создать пользователя с разными ролями
 
-PUT /user/{id}
+PUT /{role}/{id}
 User updateUser(User) -> обновить пользователя
 
-DELETE /user/{id}
+DELETE /{role}/{id}
 void deleteUser(Int id) -> удалить пользователя
 
-GET /user/{id}
+GET /{role}/{id}
 List<User> findById(Int id) -> найти пользователя
 
-GET /user?role={role}
+GET /{role}
 List<User> findByRole(Role) -> найти пользователей по роли
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -96,7 +95,7 @@ GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=free
 List<Appointment> findAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
 к врачу по заданному диапазону
 
-{role} can be user or doctor
+{role} can be patient or doctor
 ------------------------------------------------------------------------------------------------------------------------
 
 
