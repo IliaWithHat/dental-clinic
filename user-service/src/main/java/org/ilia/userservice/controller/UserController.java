@@ -30,18 +30,21 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@RequestBody UpdateUserRequest updateUserRequest) {
-        return ResponseEntity.ok().body(userService.update(updateUserRequest));
+    public ResponseEntity<User> update(@RequestBody UpdateUserRequest updateUserRequest,
+                                       @PathVariable @RightRole Role role) {
+        return ResponseEntity.ok().body(userService.update(updateUserRequest, role));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok().body(userService.login(loginRequest));
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest,
+                                               @PathVariable @RightRole Role role) {
+        return ResponseEntity.ok().body(userService.login(loginRequest, role));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable String id) {
-        return ResponseEntity.ok().body(userService.findById(id));
+    public ResponseEntity<User> findById(@PathVariable String id,
+                                         @PathVariable @RightRole Role role) {
+        return ResponseEntity.ok().body(userService.findById(id, role));
     }
 
     @GetMapping
@@ -50,8 +53,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id) {
-        userService.delete(id);
+    public ResponseEntity<?> delete(@PathVariable String id,
+                                    @PathVariable @RightRole Role role) {
+        userService.delete(id, role);
         return ResponseEntity.ok().build();
     }
 }

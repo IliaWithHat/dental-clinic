@@ -98,11 +98,6 @@ public class KeycloakService {
         usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
     }
 
-    public RoleRepresentation getUserRoleByUserId(String id) {
-        String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
-        return usersResource.get(id).roles().clientLevel(clientUuid).listAll().getFirst();
-    }
-
     public UserRepresentation getUserByEmail(String email) {
         List<UserRepresentation> userRepresentations = usersResource.searchByEmail(email, true);
         if (userRepresentations.isEmpty()) {

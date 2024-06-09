@@ -26,24 +26,23 @@ public class UserService {
 
     public User create(CreateUserRequest createUserRequest, Role role) {
         String userId = keycloakService.createUser(userMapper.toUser(createUserRequest), role);
-        return findById(userId);
+        return findById(userId, role);
     }
 
-    public User update(UpdateUserRequest updateUserRequest) {
-        if (isAllowedActionOnThisUser(updateUserRequest.getId())) {
+    public User update(UpdateUserRequest updateUserRequest, Role role) {
+        if (isAllowedActionOnThisUser(updateUserRequest.getId(), role)) {
             keycloakService.updateUser(userMapper.toUser(updateUserRequest));
-            return findById(updateUserRequest.getId());
+            return findById(updateUserRequest.getId(), role);
         }
         throw new RuntimeException();
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest, Role role) {
         keycloakService.getUserByEmail(loginRequest.getEmail());
         return new LoginResponse(keycloakService.getAccessToken(loginRequest));
     }
 
-    public User findById(String id) {
-        Role role = Role.valueOf(keycloakService.getUserRoleByUserId(id).getName());
+    public User findById(String id, Role role) {
         return userMapper.toUser(keycloakService.getUserById(id), role, id);
     }
 
@@ -53,16 +52,15 @@ public class UserService {
                 .toList();
     }
 
-    public void delete(String id) {
-        if (isAllowedActionOnThisUser(id)) {
+    public void delete(String id, Role role) {
+        if (isAllowedActionOnThisUser(id, role)) {
             keycloakService.deleteUser(id);
         }
     }
 
-    private boolean isAllowedActionOnThisUser(String userId) {
+    private boolean isAllowedActionOnThisUser(String userId, Role targetUserRole) {
         String currentUserId = ((DefaultOAuth2AuthenticatedPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
         Role currentUserRole = getCurrentUserRole();
-        Role targetUserRole = Role.valueOf(keycloakService.getUserRoleByUserId(userId).getName());
 
         return (currentUserRole.equals(OWNER) && (targetUserRole.equals(PATIENT) || targetUserRole.equals(DOCTOR))) ||
                (currentUserRole.equals(PATIENT) && targetUserRole.equals(PATIENT) && currentUserId.equals(userId));
