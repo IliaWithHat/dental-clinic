@@ -1,4 +1,4 @@
-package org.ilia.timeservice.configuration;
+package org.ilia.appointmentservice.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.ilia.timeservice.enums.Role.OWNER;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -33,7 +32,6 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/v1/working-time/**").hasRole(OWNER.name())
                         .anyRequest().denyAll())
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
