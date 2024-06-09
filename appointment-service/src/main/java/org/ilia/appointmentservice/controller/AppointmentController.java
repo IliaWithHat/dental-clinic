@@ -41,7 +41,7 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FindAppointmentResponse>> find(@RequestParam(required = false) DateRange dateRange,
+    public ResponseEntity<List<FindAppointmentResponse>> find(@ModelAttribute DateRange dateRange,
                                                               @RequestParam(required = false, defaultValue = "occupied") State state,
                                                               @PathVariable @RightRole Role role,
                                                               @PathVariable UUID userId) {

@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ilia.timeservice.enums.Day;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ public class WorkingTime {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    private Day day;
+    private DayOfWeek day;
 
     private LocalTime startTime;
 

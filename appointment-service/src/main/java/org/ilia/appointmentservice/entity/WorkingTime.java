@@ -1,8 +1,8 @@
 package org.ilia.appointmentservice.entity;
 
 import lombok.Data;
-import org.ilia.appointmentservice.enums.Day;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -10,7 +10,7 @@ import java.util.UUID;
 public class WorkingTime {
 
     private UUID id;
-    private Day day;
+    private DayOfWeek day;
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer timeIntervalInMinutes;

@@ -15,9 +15,10 @@ import org.ilia.appointmentservice.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.Month;
+import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.ilia.appointmentservice.enums.Role.DOCTOR;
@@ -51,7 +52,9 @@ public class AppointmentService {
         }
 
         if (role == PATIENT && state == OCCUPIED) {
-            return appointmentRepository.findByPatientIdAndDateRange(userId, dateRange.getFrom(), dateRange.getTo()).stream()
+            return appointmentRepository
+                    .findByPatientIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay())
+                    .stream()
                     .map(appointmentMapper::toFindAppointmentResponse)
                     .toList();
         }
@@ -60,13 +63,23 @@ public class AppointmentService {
         }
 
         if (role == DOCTOR && state == OCCUPIED) {
-            return appointmentRepository.findByDoctorIdAndDateRange(userId, dateRange.getFrom(), dateRange.getTo()).stream()
+            return appointmentRepository
+                    .findByDoctorIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay())
+                    .stream()
                     .map(appointmentMapper::toFindAppointmentResponse)
                     .toList();
         }
         if (role == DOCTOR && state == FREE) {
-            List<WorkingTime> doctorWorkingTimes = timeServiceClient.findByDoctorId(userId);
-            List<Appointment> occupiedDates = appointmentRepository.findByDoctorIdAndDateRange(userId, dateRange.getFrom(), dateRange.getTo());
+            List<WorkingTime> workingTimes = timeServiceClient.findByDoctorId(userId);
+            List<Appointment> occupiedAppointments = appointmentRepository
+                    .findByDoctorIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+
+            return generateFreeDates(workingTimes, occupiedAppointments, dateRange).stream()
+                    .map(date -> FindAppointmentResponse.builder()
+                            .date(date)
+                            .doctorId(userId)
+                            .build())
+                    .toList();
         }
 
         throw new RuntimeException();
@@ -82,5 +95,43 @@ public class AppointmentService {
         Month month = now.getMonth();
         dateRange.setFrom(LocalDate.of(year, month, 1));
         dateRange.setTo(LocalDate.of(year, month.plus(1), 1));
+    }
+
+    private List<LocalDateTime> generateFreeDates(List<WorkingTime> workingTimes, List<Appointment> occupiedAppointments, DateRange dateRange) {
+        List<LocalDateTime> freeDates = new ArrayList<>();
+
+        LocalDate currentDate = dateRange.getFrom();
+        LocalDate endDate = dateRange.getTo();
+
+        while (currentDate.isBefore(endDate)) {
+            Optional<WorkingTime> workingTimeForDay = getWorkingTimeForDay(workingTimes, currentDate.getDayOfWeek());
+
+            if (workingTimeForDay.isPresent()) {
+                WorkingTime workingTime = workingTimeForDay.get();
+                LocalTime currentTime = workingTime.getStartTime();
+                LocalTime endTime = workingTime.getEndTime();
+                Integer interval = workingTime.getTimeIntervalInMinutes();
+
+                while (currentTime.isBefore(endTime)) {
+                    freeDates.add(LocalDateTime.of(currentDate, currentTime));
+                    currentTime = currentTime.plusMinutes(interval);
+                }
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        List<LocalDateTime> occupiedDates = occupiedAppointments.stream()
+                .map(Appointment::getDate)
+                .toList();
+
+        return freeDates.stream()
+                .filter(date -> !occupiedDates.contains(date))
+                .toList();
+    }
+
+    private Optional<WorkingTime> getWorkingTimeForDay(List<WorkingTime> workingTimes, DayOfWeek dayOfWeek) {
+        return workingTimes.stream()
+                .filter(workingTime -> workingTime.getDay() == dayOfWeek)
+                .findFirst();
     }
 }

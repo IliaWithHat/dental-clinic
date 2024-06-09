@@ -32,13 +32,13 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@RequestBody UpdateUserRequest updateUserRequest,
-                                       @PathVariable @RightRole Role role) {
+                                       @PathVariable Role role) {
         return ResponseEntity.ok().body(userService.update(updateUserRequest, role));
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest,
-                                               @PathVariable @RightRole Role role) {
+                                               @PathVariable Role role) {
         return ResponseEntity.ok().body(userService.login(loginRequest, role));
     }
 
