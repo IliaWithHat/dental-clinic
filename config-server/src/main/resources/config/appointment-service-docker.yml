@@ -28,7 +28,7 @@ eureka:
       defaultZone: http://eurekaserver:8002/eureka/
 
 server:
-  port: 8011
+  port: 8012
 
 management:
   endpoints:
