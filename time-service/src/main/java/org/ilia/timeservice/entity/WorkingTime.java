@@ -26,6 +26,10 @@ public class WorkingTime {
 
     private LocalTime endTime;
 
+    private LocalTime breakStartTime;
+
+    private LocalTime breakEndTime;
+
     private Integer timeIntervalInMinutes;
 
     private UUID doctorId;

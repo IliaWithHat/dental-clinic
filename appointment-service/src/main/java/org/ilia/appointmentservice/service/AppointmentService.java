@@ -113,7 +113,9 @@ public class AppointmentService {
                 Integer interval = workingTime.getTimeIntervalInMinutes();
 
                 while (currentTime.isBefore(endTime)) {
-                    freeDates.add(LocalDateTime.of(currentDate, currentTime));
+                    if (!isBreak(currentTime, workingTime)) {
+                        freeDates.add(LocalDateTime.of(currentDate, currentTime));
+                    }
                     currentTime = currentTime.plusMinutes(interval);
                 }
             }
@@ -127,6 +129,17 @@ public class AppointmentService {
         return freeDates.stream()
                 .filter(date -> !occupiedDates.contains(date))
                 .toList();
+    }
+
+    private boolean isBreak(LocalTime currentTime, WorkingTime workingTime) {
+        LocalTime breakStartTime = workingTime.getBreakStartTime();
+        LocalTime breakEndTime = workingTime.getBreakEndTime();
+
+        if (breakStartTime == null || breakEndTime == null) {
+            return false;
+        }
+        return currentTime.isBefore(breakEndTime) &&
+               currentTime.isAfter(breakStartTime.minusMinutes(workingTime.getTimeIntervalInMinutes()));
     }
 
     private Optional<WorkingTime> getWorkingTimeForDay(List<WorkingTime> workingTimes, DayOfWeek dayOfWeek) {

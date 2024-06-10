@@ -12,6 +12,8 @@ public class CreateWorkingTimeRequest {
     private DayOfWeek day;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalTime breakStartTime;
+    private LocalTime breakEndTime;
     private Integer timeIntervalInMinutes;
     private UUID doctorId;
 }
