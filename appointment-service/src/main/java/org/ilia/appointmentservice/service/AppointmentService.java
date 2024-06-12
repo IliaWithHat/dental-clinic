@@ -10,6 +10,7 @@ import org.ilia.appointmentservice.entity.WorkingTime;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
+import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
@@ -34,8 +35,10 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AppointmentMapper appointmentMapper;
     private final TimeServiceClient timeServiceClient;
+    private final KafkaProducer kafkaProducer;
 
     public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
+        kafkaProducer.send("appointment-mail", "Appointment for user " + createAppointmentRequest.getPatientId() + " is created.");
         return appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentRequest));
     }
 

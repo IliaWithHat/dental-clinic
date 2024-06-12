@@ -23,6 +23,35 @@ services:
         aliases:
           - "database"
 
+  zookeeper:
+    image: bitnami/zookeeper:3.9.2
+    container_name: zookeeper-container
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: yes
+    ports:
+      - "2181:2181"
+    networks:
+      backend:
+        aliases:
+          - "zookeeper"
+
+  kafka:
+    image: bitnami/kafka:3.7.0
+    container_name: kafka-container
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_HOST_PORT: 9092
+    depends_on:
+      zookeeper:
+        condition: service_started
+    ports:
+      - "9092:9092"
+    networks:
+      backend:
+        aliases:
+          - "kafka"
+
   configserver:
     build: ../config-server
     image: config-server-image
@@ -140,8 +169,6 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
-    ports:
-      - "8013:8013"
     networks:
       - backend
 

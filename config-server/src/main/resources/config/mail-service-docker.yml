@@ -13,9 +13,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8002/eureka/
 
-server:
-  port: 8013
-
 management:
   endpoints:
     web:
