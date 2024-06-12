@@ -130,6 +130,21 @@ services:
     networks:
       - backend
 
+  mailservice:
+    build: ../mail-service
+    image: mail-service-image
+    container_name: mail-service-container
+    env_file: env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    ports:
+      - "8013:8013"
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge

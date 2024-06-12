@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dental_clinic_repository
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: false
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8002/eureka/
+
+server:
+  port: 8013
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

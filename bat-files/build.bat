@@ -31,4 +31,10 @@ cd appointment-service
 call ./gradlew.bat bootJar
 cd ..
 
+echo.
+echo Building email-service...
+cd mail-service
+call ./gradlew.bat bootJar
+cd ..
+
 cd bat-files
