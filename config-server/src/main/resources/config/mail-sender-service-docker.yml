@@ -15,12 +15,13 @@ spring:
     bootstrap-servers: kafka:9092
     consumer:
       auto-offset-reset: earliest
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
         spring:
-          json:
-            trusted:
-              packages: "*"
+          deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+          json.trusted.packages: "*"
+          json.type.mapping: emailDetails:org.ilia.mailsenderservice.entity.EmailDetails
 
 eureka:
   instance:

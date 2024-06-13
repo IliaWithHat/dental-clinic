@@ -13,7 +13,7 @@ public class KafkaConsumer {
     private final MailService mailService;
 
     @KafkaListener(topics = "appointment-mail", groupId = "appointment-mail-service")
-    public void listen(EmailDetails emailDetails) {
-        mailService.sendEmail(emailDetails);
+    public void listen(EmailDetails record) {
+        mailService.sendEmail(record);
     }
 }
