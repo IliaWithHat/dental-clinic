@@ -6,6 +6,11 @@ spring:
   jpa:
     open-in-view: false
 
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   security:
     oauth2:
       resourceserver:

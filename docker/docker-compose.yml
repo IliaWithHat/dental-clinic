@@ -40,6 +40,7 @@ services:
     container_name: kafka-container
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ADVERTISED_HOST_PORT: 9092
     depends_on:
@@ -105,7 +106,7 @@ services:
     build: ../eureka-server
     image: eureka-server-image
     container_name: eureka-server-container
-    env_file: env_file
+    env_file: public_env_file
     depends_on:
       configserver:
         condition: service_healthy
@@ -120,7 +121,7 @@ services:
     build: ../user-service
     image: user-service-image
     container_name: user-service-container
-    env_file: env_file
+    env_file: public_env_file
     depends_on:
       configserver:
         condition: service_healthy
@@ -133,7 +134,7 @@ services:
     build: ../time-service
     image: time-service-image
     container_name: time-service-container
-    env_file: env_file
+    env_file: public_env_file
     depends_on:
       configserver:
         condition: service_healthy
@@ -148,7 +149,7 @@ services:
     build: ../appointment-service
     image: appointment-service-image
     container_name: appointment-service-container
-    env_file: env_file
+    env_file: public_env_file
     depends_on:
       configserver:
         condition: service_healthy
@@ -159,11 +160,13 @@ services:
     networks:
       - backend
 
-  mailservice:
+  mailsenderservice:
     build: ../mail-sender-service
     image: mail-sender-service-image
     container_name: mail-sender-service-container
-    env_file: env_file
+    env_file:
+      - public_env_file
+      - private_env_file
     depends_on:
       configserver:
         condition: service_healthy
