@@ -67,7 +67,7 @@ services:
     networks:
       backend:
         aliases:
-          - "configserver"
+          - "config"
 
   keycloak:
     image: bitnami/keycloak:24.0.4
@@ -115,7 +115,7 @@ services:
     networks:
       backend:
         aliases:
-          - "eurekaserver"
+          - "eureka"
 
   userservice:
     build: ../user-service
@@ -124,6 +124,8 @@ services:
     env_file: public_env_file
     depends_on:
       configserver:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     ports:
       - "8010:8010"
@@ -155,6 +157,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      kafka:
+        condition: service_started
     ports:
       - "8012:8012"
     networks:
@@ -170,8 +174,8 @@ services:
     depends_on:
       configserver:
         condition: service_healthy
-      database:
-        condition: service_healthy
+      kafka:
+        condition: service_started
     networks:
       - backend
 

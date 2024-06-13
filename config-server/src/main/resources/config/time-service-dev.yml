@@ -3,8 +3,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/dental_clinic_repository
     username: postgres
     password: postgres
-  jpa:
-    open-in-view: false
+  jpa.open-in-view: false
 
   security:
     oauth2:
@@ -21,17 +20,9 @@ keycloak:
   client-secret: St10t32DmZStwE04v4paHNUhC2AF8Ydf
 
 eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8002/eureka/
+  instance.prefer-ip-address: true
+  client.serviceUrl.defaultZone: http://localhost:8002/eureka/
 
-server:
-  port: 8011
+server.port: 8011
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+management.endpoints.web.exposure.include: "*"

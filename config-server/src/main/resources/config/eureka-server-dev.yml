@@ -9,11 +9,6 @@ eureka:
   instance:
     hostname: localhost
 
-server:
-  port: 8002
+server.port: 8002
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+management.endpoints.web.exposure.include: "*"

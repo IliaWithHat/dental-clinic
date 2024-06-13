@@ -7,13 +7,8 @@ eureka:
     serviceUrl:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
   instance:
-    hostname: eurekaserver
+    hostname: eureka
 
-server:
-  port: 8002
+server.port: 8002
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+management.endpoints.web.exposure.include: "*"
