@@ -1,4 +1,4 @@
-package org.ilia.mailservice.kafka;
+package org.ilia.mailsenderservice.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

@@ -160,9 +160,9 @@ services:
       - backend
 
   mailservice:
-    build: ../mail-service
-    image: mail-service-image
-    container_name: mail-service-container
+    build: ../mail-sender-service
+    image: mail-sender-service-image
+    container_name: mail-sender-service-container
     env_file: env_file
     depends_on:
       configserver:
