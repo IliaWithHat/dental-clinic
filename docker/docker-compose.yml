@@ -192,19 +192,6 @@ services:
     networks:
       - backend
 
-  mailgeneratorservice:
-    build: ../mail-generator-service
-    image: mail-generator-service-image
-    container_name: mail-generator-service-container
-    env_file: public_env_file
-    depends_on:
-      configserver:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-    networks:
-      - backend
-
 networks:
   backend:
     driver: bridge

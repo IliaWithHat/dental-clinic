@@ -43,10 +43,4 @@ cd mail-sender-service
 call ./gradlew.bat bootJar
 cd ..
 
-echo.
-echo Building mail-generator-service...
-cd mail-generator-service
-call ./gradlew.bat bootJar
-cd ..
-
 cd bat-files
