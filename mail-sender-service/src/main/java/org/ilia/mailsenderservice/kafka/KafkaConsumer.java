@@ -14,6 +14,6 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "mail-sender", groupId = "mail-sender-service")
     public void listen(MailDetails mailDetails) {
-        mailService.sendEmail(mailDetails);
+        mailService.sendEmailToUser(mailDetails);
     }
 }

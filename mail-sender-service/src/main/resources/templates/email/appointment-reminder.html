@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .content {
+            line-height: 1.6;
+        }
+
+        .content p {
+            margin: 15px 0;
+        }
+
+        .appointment-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+
+        .appointment-details p {
+            margin: 5px 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" th:object="${mailDetails}">
+    <div class="header">
+        <h1>Dental Clinic</h1>
+    </div>
+    <div class="content">
+        <p th:text="'Dear ' + *{userFirstName} + ','"></p>
+        <p th:text="'This is a friendly reminder about your upcoming appointment with ' + *{doctorFirstName} + ' ' + *{doctorLastName} + '.'"></p>
+        <div class="appointment-details">
+            <p><strong>Appointment Details:</strong></p>
+            <p th:text="'Date: ' + *{appointmentDate.toLocalDate()}"></p>
+            <p th:text="'Time: ' + *{appointmentDate.toLocalTime()}"></p>
+        </div>
+        <p>Please ensure you arrive 10–15 minutes early for any necessary paperwork. If you need to cancel or
+            reschedule, please let us know as soon as possible.</p>
+        <p>Looking forward to seeing you.</p>
+        <p>Best regards,
+            <br>Dental Clinic Team
+        </p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Dental Clinic. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

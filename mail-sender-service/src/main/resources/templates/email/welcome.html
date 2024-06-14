@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .content {
+            line-height: 1.6;
+        }
+
+        .content p {
+            margin: 15px 0;
+        }
+
+        .appointment-details p {
+            margin: 5px 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" th:object="${mailDetails}">
+    <div class="header">
+        <h1>Dental Clinic</h1>
+    </div>
+    <div class="content">
+        <p th:text="'Dear ' + *{userFirstName} + ','"></p>
+        <p>Welcome to Dental Clinic!</p>
+        <p>We are delighted to have you join our community. With our application, you can easily schedule appointments
+            with your preferred doctors, receive timely reminders, and manage your health effortlessly.</p>
+        <p>To get started, simply log in to your account and explore the features available to you. If you have any
+            questions or need assistance, our support team is here to help.</p>
+        <p>Thank you for choosing Dental Clinic. We look forward to helping you with your healthcare needs.</p>
+        <p>Best regards,
+            <br>Dental Clinic Team
+        </p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Dental Clinic. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
