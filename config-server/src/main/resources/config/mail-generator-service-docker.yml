@@ -9,6 +9,6 @@ spring:
         spring:
           deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
           json.trusted.packages: "*"
-          json.type.mapping: emailDetails:org.ilia.mailsenderservice.entity.EmailDetails
+          json.type.mapping: emailDetails:org.ilia.mailgeneratorservice.entity.MailDetails
 
 management.endpoints.web.exposure.include: "*"

@@ -1,4 +1,4 @@
-package org.ilia.appointmentservice.entity;
+package org.ilia.mailgeneratorservice.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmailDetails {
+public class MailDetails {
 
     private String receiverEmail;
     private String subject;

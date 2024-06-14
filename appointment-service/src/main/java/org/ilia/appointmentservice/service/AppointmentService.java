@@ -6,7 +6,7 @@ import org.ilia.appointmentservice.controller.request.DateRange;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
 import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
 import org.ilia.appointmentservice.entity.Appointment;
-import org.ilia.appointmentservice.entity.EmailDetails;
+import org.ilia.appointmentservice.entity.MailDetails;
 import org.ilia.appointmentservice.entity.WorkingTime;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
@@ -39,7 +39,7 @@ public class AppointmentService {
     private final KafkaProducer kafkaProducer;
 
     public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
-        kafkaProducer.send(EmailDetails.builder()
+        kafkaProducer.send(MailDetails.builder()
                 .receiverEmail("rozhkoilia5533@gmail.com")
                 .subject("Hello")
                 .content("<h1>Hello</h1>")

@@ -11,7 +11,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.type.mapping: emailDetails:org.ilia.appointmentservice.entity.EmailDetails
+        spring.json.type.mapping: emailDetails:org.ilia.appointmentservice.entity.MailDetails
 
   security:
     oauth2:
