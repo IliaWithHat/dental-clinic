@@ -9,6 +9,6 @@ public class KafkaConfiguration {
 
     @Bean
     public NewTopic appointmentTopic() {
-        return new NewTopic("appointment-mail", 1, (short) 1);
+        return new NewTopic("mail-sender", 1, (short) 1);
     }
 }

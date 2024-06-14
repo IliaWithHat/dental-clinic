@@ -11,7 +11,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import static org.apache.commons.lang.CharEncoding.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
 @Slf4j
@@ -27,7 +27,7 @@ public class MailService {
     public void sendEmail(EmailDetails emailDetails) {
         log.debug("In sendEmail(), receiver: {}, subject: {}", emailDetails.getReceiverEmail(), emailDetails.getSubject());
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(message, UTF_8);
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message, UTF_8.name());
         messageHelper.setFrom(senderEmailAddress);
         messageHelper.setTo(emailDetails.getReceiverEmail());
         messageHelper.setSubject(emailDetails.getSubject());

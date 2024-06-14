@@ -19,8 +19,4 @@ spring:
           json.trusted.packages: "*"
           json.type.mapping: emailDetails:org.ilia.mailsenderservice.entity.EmailDetails
 
-eureka:
-  instance.prefer-ip-address: true
-  client.serviceUrl.defaultZone: http://eureka:8002/eureka/
-
 management.endpoints.web.exposure.include: "*"
