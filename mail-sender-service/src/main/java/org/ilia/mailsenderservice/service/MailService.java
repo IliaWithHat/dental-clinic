@@ -4,7 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.ilia.mailsenderservice.entity.EmailDetails;
+import org.ilia.mailsenderservice.entity.MailDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,14 +24,14 @@ public class MailService {
     private String senderEmailAddress;
 
     @SneakyThrows
-    public void sendEmail(EmailDetails emailDetails) {
-        log.debug("In sendEmail(), receiver: {}, subject: {}", emailDetails.getReceiverEmail(), emailDetails.getSubject());
+    public void sendEmail(MailDetails mailDetails) {
+        log.debug("In sendEmail(), receiver: {}, subject: {}", mailDetails.getUserEmail(), mailDetails.getSubject());
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, UTF_8.name());
         messageHelper.setFrom(senderEmailAddress);
-        messageHelper.setTo(emailDetails.getReceiverEmail());
-        messageHelper.setSubject(emailDetails.getSubject());
-        messageHelper.setText(emailDetails.getContent(), true);
+        messageHelper.setTo(mailDetails.getUserEmail());
+        messageHelper.setSubject(mailDetails.getSubject().name());
+//        messageHelper.setText(mailDetails.getContent(), true);
         try {
             mailSender.send(message);
         } catch (MailException e) {
