@@ -2,8 +2,8 @@
 
 echo.
 echo Stopping Docker containers...
-docker stop postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container user-service-container time-service-container appointment-service-container mail-sender-service-container
+docker stop postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container mail-sender-service-container
 
 echo.
 echo Removing Docker containers...
-docker rm postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container user-service-container time-service-container appointment-service-container mail-sender-service-container
+docker rm postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container mail-sender-service-container

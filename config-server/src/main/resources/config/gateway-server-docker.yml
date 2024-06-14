@@ -1,0 +1,11 @@
+spring.cloud.gateway.discovery.locator.enabled: true
+spring.cloud.gateway.discovery.locator.lower-case-service-id: true
+
+eureka:
+  instance.prefer-ip-address: true
+  client.serviceUrl.defaultZone: http://eureka:8002/eureka/
+
+server.port: 8003
+
+management.endpoints.web.exposure.include: "*"
+management.endpoint.gateway.enabled: true

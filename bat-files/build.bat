@@ -14,6 +14,12 @@ call ./gradlew.bat bootJar
 cd ..
 
 echo.
+echo Building gateway-server...
+cd gateway-server
+call ./gradlew.bat bootJar
+cd ..
+
+echo.
 echo Building user-service...
 cd user-service
 call ./gradlew.bat bootJar
