@@ -192,6 +192,19 @@ services:
     networks:
       - backend
 
+  mailschedulerservice:
+    build: ../mail-scheduler-service
+    image: mail-scheduler-service-image
+    container_name: mail-scheduler-service-container
+    env_file: public_env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge

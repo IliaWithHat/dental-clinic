@@ -1,0 +1,12 @@
+spring:
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: mailDetails:org.ilia.mailschedulerservice.entity.MailDetails
+
+eureka:
+  instance.prefer-ip-address: true
+  client.serviceUrl.defaultZone: http://localhost:8002/eureka/
