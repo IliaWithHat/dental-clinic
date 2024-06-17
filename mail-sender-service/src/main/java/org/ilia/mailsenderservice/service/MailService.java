@@ -3,6 +3,8 @@ package org.ilia.mailsenderservice.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.ilia.mailsenderservice.entity.MailDetails;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,28 +16,23 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static lombok.AccessLevel.PRIVATE;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class MailService {
 
-    private final JavaMailSender mailSender;
-    private final TemplateEngine templateEngine;
+    JavaMailSender mailSender;
+    TemplateEngine templateEngine;
 
     @Value("${EMAIL_ADDRESS}")
-    private String senderEmailAddress;
+    @NonFinal
+    String senderEmailAddress;
 
     public void sendEmailToUser(MailDetails mailDetails) {
-        String receiverEmail = mailDetails.getUserEmail();
-        String subject = switch (mailDetails.getSubject()) {
-            case APPOINTMENT_CONFIRMATION -> "Appointment Confirmation";
-            case APPOINTMENT_REMINDER -> "Reminder: Upcoming Appointment";
-            case WELCOME -> "Welcome to Dental Clinic!";
-        };
-        String content = generateContent(mailDetails);
-
-        sendEmail(receiverEmail, subject, content);
+        sendEmail(mailDetails.getUserEmail(), mailDetails.getSubject().getEmailSubject(), generateContent(mailDetails));
     }
 
     private void sendEmail(String receiverEmail, String subject, String content) {
@@ -56,13 +53,6 @@ public class MailService {
     private String generateContent(MailDetails mailDetails) {
         Context context = new Context();
         context.setVariable("mailDetails", mailDetails);
-
-        String templateName = switch (mailDetails.getSubject()) {
-            case APPOINTMENT_CONFIRMATION -> "appointment-confirmation";
-            case APPOINTMENT_REMINDER -> "appointment-reminder";
-            case WELCOME -> "welcome";
-        };
-
-        return templateEngine.process("email/" + templateName, context);
+        return templateEngine.process("email/" + mailDetails.getSubject().getTemplateName(), context);
     }
 }
