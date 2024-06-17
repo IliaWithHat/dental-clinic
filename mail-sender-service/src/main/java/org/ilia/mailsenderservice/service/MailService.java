@@ -32,7 +32,7 @@ public class MailService {
     String senderEmailAddress;
 
     public void sendEmailToUser(MailDetails mailDetails) {
-        sendEmail(mailDetails.getUserEmail(), mailDetails.getSubject().getEmailSubject(), generateContent(mailDetails));
+        sendEmail(mailDetails.getPatientEmail(), mailDetails.getSubject().getEmailSubject(), generateContent(mailDetails));
     }
 
     private void sendEmail(String receiverEmail, String subject, String content) {

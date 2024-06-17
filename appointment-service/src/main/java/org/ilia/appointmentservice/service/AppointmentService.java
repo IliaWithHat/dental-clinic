@@ -7,10 +7,13 @@ import org.ilia.appointmentservice.controller.request.DateRange;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
 import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
 import org.ilia.appointmentservice.entity.Appointment;
+import org.ilia.appointmentservice.entity.MailDetails;
+import org.ilia.appointmentservice.entity.User;
 import org.ilia.appointmentservice.entity.WorkingTime;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
+import org.ilia.appointmentservice.feign.UserServiceClient;
 import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
@@ -28,6 +31,7 @@ import static org.ilia.appointmentservice.enums.Role.DOCTOR;
 import static org.ilia.appointmentservice.enums.Role.PATIENT;
 import static org.ilia.appointmentservice.enums.State.FREE;
 import static org.ilia.appointmentservice.enums.State.OCCUPIED;
+import static org.ilia.appointmentservice.enums.Subject.APPOINTMENT_CONFIRMATION;
 
 @Service
 @RequiredArgsConstructor
@@ -38,12 +42,30 @@ public class AppointmentService {
     AppointmentRepository appointmentRepository;
     AppointmentMapper appointmentMapper;
     TimeServiceClient timeServiceClient;
+    UserServiceClient userServiceClient;
     KafkaProducer kafkaProducer;
 
     public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
-        //TODO write normal code.
-//        kafkaProducer.send(null);
-        return appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentRequest));
+        Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentRequest));
+        sendEmailToUserWithConfirmationAppointment(savedAppointment);
+        return savedAppointment;
+    }
+
+    private void sendEmailToUserWithConfirmationAppointment(Appointment appointment) {
+        User doctor = userServiceClient.findById(DOCTOR, appointment.getDoctorId());
+        User patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
+
+        MailDetails mailDetails = MailDetails.builder()
+                .subject(APPOINTMENT_CONFIRMATION)
+                .patientEmail(patient.getEmail())
+                .patientFirstName(patient.getFirstName())
+                .patientLastName(patient.getLastName())
+                .doctorFirstName(doctor.getFirstName())
+                .doctorLastName(doctor.getLastName())
+                .appointmentDate(appointment.getDate())
+                .build();
+
+        kafkaProducer.send(mailDetails);
     }
 
     public Appointment update(UpdateAppointmentRequest updateAppointmentRequest, UUID appointmentId, Role role, UUID userId) {
@@ -90,10 +112,6 @@ public class AppointmentService {
         }
 
         throw new RuntimeException();
-    }
-
-    public void delete(UUID appointmentId, Role role, UUID userId) {
-        appointmentRepository.deleteById(appointmentId);
     }
 
     private void initializeDateRange(DateRange dateRange) {
@@ -153,5 +171,9 @@ public class AppointmentService {
         return workingTimes.stream()
                 .filter(workingTime -> workingTime.getDay() == dayOfWeek)
                 .findFirst();
+    }
+
+    public void delete(UUID appointmentId, Role role, UUID userId) {
+        appointmentRepository.deleteById(appointmentId);
     }
 }

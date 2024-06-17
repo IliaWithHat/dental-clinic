@@ -19,9 +19,9 @@ import static lombok.AccessLevel.PRIVATE;
 public class MailDetails {
 
     Subject subject;
-    String userEmail;
-    String userFirstName;
-    String userLastName;
+    String patientEmail;
+    String patientFirstName;
+    String patientLastName;
     String doctorFirstName;
     String doctorLastName;
     LocalDateTime appointmentDate;

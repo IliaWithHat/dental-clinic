@@ -68,7 +68,7 @@
         <h1>Dental Clinic</h1>
     </div>
     <div class="content">
-        <p th:text="'Dear ' + *{userFirstName} + ','"></p>
+        <p th:text="'Dear ' + *{patientFirstName} + ','"></p>
         <p th:text="'This is a friendly reminder about your upcoming appointment with ' + *{doctorFirstName} + ' ' + *{doctorLastName} + '.'"></p>
         <div class="appointment-details">
             <p><strong>Appointment Details:</strong></p>
