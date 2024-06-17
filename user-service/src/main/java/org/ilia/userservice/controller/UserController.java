@@ -1,6 +1,7 @@
 package org.ilia.userservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.UpdateUserRequest;
@@ -15,14 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/v1/{role}")
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserController {
 
-    private final UserService userService;
+    UserService userService;
 
     @PostMapping
     public ResponseEntity<User> create(@RequestBody CreateUserRequest createUserRequest,

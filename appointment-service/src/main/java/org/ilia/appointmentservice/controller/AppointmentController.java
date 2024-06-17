@@ -1,6 +1,7 @@
 package org.ilia.appointmentservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.appointmentservice.controller.request.CreateAppointmentRequest;
 import org.ilia.appointmentservice.controller.request.DateRange;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
@@ -16,14 +17,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/v1/{role}/{userId}/appointment")
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class AppointmentController {
 
-    private final AppointmentService appointmentService;
+    AppointmentService appointmentService;
 
     @PostMapping
     public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentRequest createAppointmentRequest,

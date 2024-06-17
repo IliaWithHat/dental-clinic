@@ -1,6 +1,7 @@
 package org.ilia.appointmentservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.appointmentservice.controller.request.CreateAppointmentRequest;
 import org.ilia.appointmentservice.controller.request.DateRange;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.appointmentservice.enums.Role.DOCTOR;
 import static org.ilia.appointmentservice.enums.Role.PATIENT;
 import static org.ilia.appointmentservice.enums.State.FREE;
@@ -29,13 +31,14 @@ import static org.ilia.appointmentservice.enums.State.OCCUPIED;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 @Transactional
 public class AppointmentService {
 
-    private final AppointmentRepository appointmentRepository;
-    private final AppointmentMapper appointmentMapper;
-    private final TimeServiceClient timeServiceClient;
-    private final KafkaProducer kafkaProducer;
+    AppointmentRepository appointmentRepository;
+    AppointmentMapper appointmentMapper;
+    TimeServiceClient timeServiceClient;
+    KafkaProducer kafkaProducer;
 
     public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
         //TODO write normal code.

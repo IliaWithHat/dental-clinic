@@ -1,6 +1,7 @@
 package org.ilia.timeservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.timeservice.controller.request.CreateWorkingTimeRequest;
 import org.ilia.timeservice.entity.WorkingTime;
 import org.ilia.timeservice.service.WorkingTimeService;
@@ -10,14 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/v1/working-time")
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class WorkingTimeController {
 
-    private final WorkingTimeService workingTimeService;
+    WorkingTimeService workingTimeService;
 
     @GetMapping("/{doctorId}")
     public ResponseEntity<List<WorkingTime>> findByDoctorId(@PathVariable UUID doctorId) {

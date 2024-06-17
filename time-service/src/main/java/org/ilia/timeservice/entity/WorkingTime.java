@@ -4,33 +4,37 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@FieldDefaults(level = PRIVATE)
 public class WorkingTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    UUID id;
 
     @Enumerated(EnumType.STRING)
-    private DayOfWeek day;
+    DayOfWeek day;
 
-    private LocalTime startTime;
+    LocalTime startTime;
 
-    private LocalTime endTime;
+    LocalTime endTime;
 
-    private LocalTime breakStartTime;
+    LocalTime breakStartTime;
 
-    private LocalTime breakEndTime;
+    LocalTime breakEndTime;
 
-    private Integer timeIntervalInMinutes;
+    Integer timeIntervalInMinutes;
 
-    private UUID doctorId;
+    UUID doctorId;
 }

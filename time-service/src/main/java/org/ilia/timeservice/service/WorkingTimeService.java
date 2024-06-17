@@ -1,6 +1,7 @@
 package org.ilia.timeservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.timeservice.controller.request.CreateWorkingTimeRequest;
 import org.ilia.timeservice.entity.WorkingTime;
 import org.ilia.timeservice.mapper.WorkingTimeMapper;
@@ -11,13 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 @Transactional
 public class WorkingTimeService {
 
-    private final WorkingTimeRepository workingTimeRepository;
-    private final WorkingTimeMapper workingTimeMapper;
+    WorkingTimeRepository workingTimeRepository;
+    WorkingTimeMapper workingTimeMapper;
 
     public List<WorkingTime> findByDoctorId(UUID doctorId) {
         return workingTimeRepository.findByDoctorId(doctorId);

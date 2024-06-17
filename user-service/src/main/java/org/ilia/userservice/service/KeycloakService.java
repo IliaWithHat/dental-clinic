@@ -3,6 +3,8 @@ package org.ilia.userservice.service;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.ilia.userservice.configuration.KeycloakProperties;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.entity.User;
@@ -19,17 +21,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.keycloak.representations.idm.CredentialRepresentation.PASSWORD;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class KeycloakService {
 
-    private final KeycloakProperties keycloakProperties;
-    private final Keycloak keycloak;
+    KeycloakProperties keycloakProperties;
+    Keycloak keycloak;
 
-    private UsersResource usersResource;
-    private ClientsResource clientsResource;
+    @NonFinal
+    UsersResource usersResource;
+    @NonFinal
+    ClientsResource clientsResource;
 
     @PostConstruct
     private void init() {

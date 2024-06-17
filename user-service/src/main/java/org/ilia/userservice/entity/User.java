@@ -1,21 +1,25 @@
 package org.ilia.userservice.entity;
 
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import org.ilia.userservice.enums.Role;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Data
+@FieldDefaults(level = PRIVATE)
 public class User {
 
-    private UUID id;
-    private String email;
-    private String firstName;
-    private String lastName;
-    private LocalDate birthDate;
-    private String phoneNumber;
-    private String isWorking;
-    private String password;
-    private Role role;
+    UUID id;
+    String email;
+    String firstName;
+    String lastName;
+    LocalDate birthDate;
+    String phoneNumber;
+    String isWorking;
+    String password;
+    Role role;
 }

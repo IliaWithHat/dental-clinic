@@ -1,18 +1,22 @@
 package org.ilia.userservice.controller.request;
 
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Data
+@FieldDefaults(level = PRIVATE)
 public class UpdateUserRequest {
 
-    private UUID id;
-    private String email;
-    private String firstName;
-    private String lastName;
-    private LocalDate birthDate;
-    private String phoneNumber;
-    private String isWorking;
+    UUID id;
+    String email;
+    String firstName;
+    String lastName;
+    LocalDate birthDate;
+    String phoneNumber;
+    String isWorking;
 }

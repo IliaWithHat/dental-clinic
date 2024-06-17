@@ -1,6 +1,7 @@
 package org.ilia.userservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.ilia.userservice.controller.request.CreateUserRequest;
 import org.ilia.userservice.controller.request.LoginRequest;
 import org.ilia.userservice.controller.request.UpdateUserRequest;
@@ -16,14 +17,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.userservice.enums.Role.*;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = PRIVATE, makeFinal = true)
 public class UserService {
 
-    private final KeycloakService keycloakService;
-    private final UserMapper userMapper;
+    KeycloakService keycloakService;
+    UserMapper userMapper;
 
     public User create(CreateUserRequest createUserRequest, Role role) {
         UUID userId = keycloakService.createUser(userMapper.toUser(createUserRequest), role);

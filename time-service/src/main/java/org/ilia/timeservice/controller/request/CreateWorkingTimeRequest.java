@@ -1,19 +1,23 @@
 package org.ilia.timeservice.controller.request;
 
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Data
+@FieldDefaults(level = PRIVATE)
 public class CreateWorkingTimeRequest {
 
-    private DayOfWeek day;
-    private LocalTime startTime;
-    private LocalTime endTime;
-    private LocalTime breakStartTime;
-    private LocalTime breakEndTime;
-    private Integer timeIntervalInMinutes;
-    private UUID doctorId;
+    DayOfWeek day;
+    LocalTime startTime;
+    LocalTime endTime;
+    LocalTime breakStartTime;
+    LocalTime breakEndTime;
+    Integer timeIntervalInMinutes;
+    UUID doctorId;
 }
