@@ -7,6 +7,12 @@ spring:
       properties:
         spring.json.type.mapping: mailDetails:org.ilia.mailschedulerservice.entity.MailDetails
 
+keycloak:
+  email: rozhkoilia5533@gmail.com
+  password: ilia
+
+cron.send-appointment-reminder-email: 0 0 8 * * *
+
 eureka:
   instance.prefer-ip-address: true
   client.serviceUrl.defaultZone: http://localhost:8002/eureka/

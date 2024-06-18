@@ -8,12 +8,12 @@ import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
 import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
 import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.entity.MailDetails;
-import org.ilia.appointmentservice.entity.User;
-import org.ilia.appointmentservice.entity.WorkingTime;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
 import org.ilia.appointmentservice.feign.UserServiceClient;
+import org.ilia.appointmentservice.feign.response.User;
+import org.ilia.appointmentservice.feign.response.WorkingTime;
 import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
@@ -47,11 +47,11 @@ public class AppointmentService {
 
     public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
         Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentRequest));
-        sendEmailToUserWithConfirmationAppointment(savedAppointment);
+        sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
         return savedAppointment;
     }
 
-    private void sendEmailToUserWithConfirmationAppointment(Appointment appointment) {
+    private void sendEmailToPatientWithAppointmentConfirmation(Appointment appointment) {
         User doctor = userServiceClient.findById(DOCTOR, appointment.getDoctorId());
         User patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
 

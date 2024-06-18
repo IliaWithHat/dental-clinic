@@ -28,6 +28,11 @@ services:
     container_name: zookeeper-container
     environment:
       ALLOW_ANONYMOUS_LOGIN: yes
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z localhost 2181 || exit -1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "2181:2181"
     networks:
@@ -45,7 +50,7 @@ services:
       KAFKA_ADVERTISED_HOST_PORT: 9092
     depends_on:
       zookeeper:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "9092:9092"
     networks:
