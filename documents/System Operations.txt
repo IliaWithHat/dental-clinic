@@ -96,6 +96,31 @@ List<Appointment> findAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int d
 ------------------------------------------------------------------------------------------------------------------------
 
 
+Review Service
+------------------------------------------------------------------------------------------------------------------------
+Review {
+    Int id,
+    String review,
+    LocalDateTime date,
+    Int appointmentId,
+    Int patientId,
+    Int doctorId
+}
+
+POST /{role}/{userId}/review
+Review createReview(Review) -> создать отзыв на врача
+
+PUT /{role}/{userId}/review/{reviewId}
+Review createReview(Review) -> обновить отзыв
+
+DELETE /{role}/{userId}/review/{reviewId}
+void createReview(Int reviewId) -> удалить отзыв
+
+GET /{role}/{userId}/review
+List<Review> findReviews() -> найти отзывы для врача
+------------------------------------------------------------------------------------------------------------------------
+
+
 Email Service
 ------------------------------------------------------------------------------------------------------------------------
 void sendAppointmentConfirmationEmailToPatient(Appointment) -> отправить письмо с подтверждением записи к врачу
