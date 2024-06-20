@@ -15,6 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class FindAppointmentResponse {
 
     LocalDateTime date;
+    Boolean isPatientCome;
     UUID patientId;
     UUID doctorId;
 }

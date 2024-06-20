@@ -5,6 +5,8 @@ import lombok.experimental.FieldDefaults;
 import org.ilia.reviewservice.controller.request.CreateReviewDto;
 import org.ilia.reviewservice.controller.request.UpdateReviewDto;
 import org.ilia.reviewservice.entity.Review;
+import org.ilia.reviewservice.enums.Role;
+import org.ilia.reviewservice.feign.AppointmentClient;
 import org.ilia.reviewservice.mapper.ReviewMapper;
 import org.ilia.reviewservice.repository.ReviewRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,13 +28,19 @@ public class ReviewService {
 
     ReviewRepository reviewRepository;
     ReviewMapper reviewMapper;
+    AppointmentClient appointmentClient;
 
     public List<Review> findAll(UUID doctorId) {
         return reviewRepository.findByDoctorId(doctorId);
     }
 
     public Review create(CreateReviewDto createReviewDto, UUID doctorId) {
-        //TODO check if appointment exist
+        boolean patientWasOnAppointment = appointmentClient.find(Role.PATIENT, getCurrentUserId()).stream()
+                .anyMatch(appointment -> appointment.getIsPatientCome() != null && appointment.getIsPatientCome());
+        if (!patientWasOnAppointment) {
+            throw new RuntimeException();
+        }
+
         Review reviewToSave = reviewMapper.toReview(createReviewDto);
         reviewToSave.setPatientId(getCurrentUserId());
         reviewToSave.setDoctorId(doctorId);

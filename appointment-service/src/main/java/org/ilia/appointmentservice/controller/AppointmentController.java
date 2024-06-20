@@ -43,6 +43,13 @@ public class AppointmentController {
         return ResponseEntity.ok().body(appointmentService.update(updateAppointmentRequest, appointmentId, role, userId));
     }
 
+    @GetMapping("/{appointmentId}")
+    public ResponseEntity<Appointment> get(@PathVariable UUID appointmentId,
+                                           @PathVariable @RightRole Role role,
+                                           @PathVariable UUID userId) {
+        return ResponseEntity.ok().body(appointmentService.findById(appointmentId, role, userId));
+    }
+
     @GetMapping
     public ResponseEntity<List<FindAppointmentResponse>> find(@ModelAttribute DateRange dateRange,
                                                               @RequestParam(required = false, defaultValue = "occupied") State state,

@@ -20,7 +20,10 @@ import org.ilia.appointmentservice.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,15 +78,27 @@ public class AppointmentService {
                 .orElseThrow();
     }
 
-    public List<FindAppointmentResponse> find(DateRange dateRange, State state, Role role, UUID userId) {
-        if (dateRange.equals(new DateRange())) {
-            initializeDateRange(dateRange);
+    public Appointment findById(UUID appointmentId, Role role, UUID userId) {
+        if (role == PATIENT) {
+            throw new RuntimeException();
         }
+        return appointmentRepository.findById(appointmentId)
+                .filter(appointment -> appointment.getDoctorId().equals(userId))
+                .orElseThrow();
+    }
+
+    public List<FindAppointmentResponse> find(DateRange dateRange, State state, Role role, UUID userId) {
+        boolean ignoreDateRange = dateRange.equals(new DateRange());
 
         if (role == PATIENT && state == OCCUPIED) {
-            return appointmentRepository
-                    .findByPatientIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay())
-                    .stream()
+            List<Appointment> appointments;
+            if (ignoreDateRange) {
+                appointments = appointmentRepository.findByPatientId(userId);
+            } else {
+                appointments = appointmentRepository.findByPatientIdAndDateRange(
+                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+            }
+            return appointments.stream()
                     .map(appointmentMapper::toFindAppointmentResponse)
                     .toList();
         }
@@ -92,16 +107,27 @@ public class AppointmentService {
         }
 
         if (role == DOCTOR && state == OCCUPIED) {
-            return appointmentRepository
-                    .findByDoctorIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay())
-                    .stream()
+            List<Appointment> appointments;
+            if (ignoreDateRange) {
+                appointments = appointmentRepository.findByDoctorId(userId);
+            } else {
+                appointments = appointmentRepository.findByDoctorIdAndDateRange(
+                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+            }
+            return appointments.stream()
                     .map(appointmentMapper::toFindAppointmentResponse)
                     .toList();
         }
         if (role == DOCTOR && state == FREE) {
             List<WorkingTime> workingTimes = timeServiceClient.findByDoctorId(userId);
-            List<Appointment> occupiedAppointments = appointmentRepository
-                    .findByDoctorIdAndDateRange(userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+
+            List<Appointment> occupiedAppointments;
+            if (ignoreDateRange) {
+                throw new RuntimeException();
+            } else {
+                occupiedAppointments = appointmentRepository.findByDoctorIdAndDateRange(
+                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+            }
 
             return generateFreeDates(workingTimes, occupiedAppointments, dateRange).stream()
                     .map(date -> FindAppointmentResponse.builder()
@@ -112,14 +138,6 @@ public class AppointmentService {
         }
 
         throw new RuntimeException();
-    }
-
-    private void initializeDateRange(DateRange dateRange) {
-        LocalDate now = LocalDate.now();
-        int year = now.getYear();
-        Month month = now.getMonth();
-        dateRange.setFrom(LocalDate.of(year, month, 1));
-        dateRange.setTo(LocalDate.of(year, month.plus(1), 1));
     }
 
     private List<LocalDateTime> generateFreeDates(List<WorkingTime> workingTimes, List<Appointment> occupiedAppointments, DateRange dateRange) {
