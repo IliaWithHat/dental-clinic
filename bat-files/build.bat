@@ -38,6 +38,12 @@ call ./gradlew.bat bootJar
 cd ..
 
 echo.
+echo Building review-service...
+cd review-service
+call ./gradlew.bat bootJar
+cd ..
+
+echo.
 echo Building mail-sender-service...
 cd mail-sender-service
 call ./gradlew.bat bootJar

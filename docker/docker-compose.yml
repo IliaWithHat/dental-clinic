@@ -182,6 +182,21 @@ services:
     networks:
       - backend
 
+  reviewservice:
+    build: ../review-service
+    image: review-service-image
+    container_name: review-service-container
+    env_file: public_env_file
+    depends_on:
+      configserver:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    ports:
+      - "8013:8013"
+    networks:
+      - backend
+
   mailsenderservice:
     build: ../mail-sender-service
     image: mail-sender-service-image
