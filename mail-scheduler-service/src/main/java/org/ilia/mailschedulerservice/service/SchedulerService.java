@@ -3,12 +3,12 @@ package org.ilia.mailschedulerservice.service;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.ilia.mailschedulerservice.entity.DateRange;
 import org.ilia.mailschedulerservice.entity.MailDetails;
 import org.ilia.mailschedulerservice.feign.AppointmentServiceClient;
 import org.ilia.mailschedulerservice.feign.UserServiceClient;
-import org.ilia.mailschedulerservice.feign.request.DateRange;
-import org.ilia.mailschedulerservice.feign.response.FindAppointmentResponse;
-import org.ilia.mailschedulerservice.feign.response.User;
+import org.ilia.mailschedulerservice.feign.response.AppointmentDto;
+import org.ilia.mailschedulerservice.feign.response.UserDto;
 import org.ilia.mailschedulerservice.kafka.KafkaProducer;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -39,14 +39,14 @@ public class SchedulerService {
         tokenService.initializeToken();
         updateDateRange();
 
-        List<User> doctors = userServiceClient.findByRole(DOCTOR);
+        List<UserDto> doctors = userServiceClient.findByRole(DOCTOR);
 
-        for (User doctor : doctors) {
-            List<FindAppointmentResponse> appointmentForThisDoctor = appointmentServiceClient.find(
+        for (UserDto doctor : doctors) {
+            List<AppointmentDto> appointmentForThisDoctor = appointmentServiceClient.find(
                     dateRange.getFrom(), dateRange.getTo(), DOCTOR, doctor.getId());
 
-            for (FindAppointmentResponse appointment : appointmentForThisDoctor) {
-                User patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
+            for (AppointmentDto appointment : appointmentForThisDoctor) {
+                UserDto patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
                 sendEmailToPatientWithAppointmentReminder(doctor, patient, appointment);
             }
         }
@@ -62,7 +62,7 @@ public class SchedulerService {
         }
     }
 
-    private void sendEmailToPatientWithAppointmentReminder(User doctor, User patient, FindAppointmentResponse appointment) {
+    private void sendEmailToPatientWithAppointmentReminder(UserDto doctor, UserDto patient, AppointmentDto appointment) {
         MailDetails mailDetails = MailDetails.builder()
                 .subject(APPOINTMENT_REMINDER)
                 .patientEmail(patient.getEmail())

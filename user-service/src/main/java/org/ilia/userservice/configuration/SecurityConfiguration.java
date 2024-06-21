@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static org.ilia.userservice.enums.Role.ADMIN;
 import static org.ilia.userservice.enums.Role.OWNER;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -36,7 +37,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         .requestMatchers(POST,
-                                "/v1/{role}/login").permitAll()
+                                "v1/{role}", "/v1/{role}/login").permitAll()
 
                         .requestMatchers(GET,
                                 "/v1/{role}/{id}").authenticated()
@@ -46,11 +47,9 @@ public class SecurityConfiguration {
                                 "v1/{role}/{id}").authenticated()
 
                         .requestMatchers(GET,
-                                "v1/{role}").hasRole(OWNER.name())
-                        .requestMatchers(POST,
-                                "v1/{role}").hasRole(OWNER.name())
+                                "v1/{role}").hasAnyRole(OWNER.name(), ADMIN.name())
 
-                        .anyRequest().denyAll())
+                        .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
                 .sessionManagement(session -> session

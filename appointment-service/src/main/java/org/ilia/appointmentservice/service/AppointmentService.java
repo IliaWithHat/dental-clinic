@@ -2,18 +2,18 @@ package org.ilia.appointmentservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.appointmentservice.controller.request.CreateAppointmentRequest;
-import org.ilia.appointmentservice.controller.request.DateRange;
-import org.ilia.appointmentservice.controller.request.UpdateAppointmentRequest;
-import org.ilia.appointmentservice.controller.response.FindAppointmentResponse;
+import org.ilia.appointmentservice.controller.request.CreateAppointmentDto;
+import org.ilia.appointmentservice.controller.request.DateRangeDto;
+import org.ilia.appointmentservice.controller.request.UpdateAppointmentDto;
+import org.ilia.appointmentservice.controller.response.AppointmentDto;
 import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.entity.MailDetails;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
 import org.ilia.appointmentservice.feign.UserServiceClient;
-import org.ilia.appointmentservice.feign.response.User;
-import org.ilia.appointmentservice.feign.response.WorkingTime;
+import org.ilia.appointmentservice.feign.response.UserDto;
+import org.ilia.appointmentservice.feign.response.WorkingTimeDto;
 import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
@@ -48,15 +48,18 @@ public class AppointmentService {
     UserServiceClient userServiceClient;
     KafkaProducer kafkaProducer;
 
-    public Appointment create(CreateAppointmentRequest createAppointmentRequest, Role role, UUID userId) {
-        Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentRequest));
+    public AppointmentDto create(CreateAppointmentDto createAppointmentDto, Role role, UUID userId) {
+        if (role != DOCTOR) {
+            throw new RuntimeException();
+        }
+        Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentDto));
         sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
-        return savedAppointment;
+        return appointmentMapper.toAppointmentDto(savedAppointment);
     }
 
     private void sendEmailToPatientWithAppointmentConfirmation(Appointment appointment) {
-        User doctor = userServiceClient.findById(DOCTOR, appointment.getDoctorId());
-        User patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
+        UserDto doctor = userServiceClient.findById(DOCTOR, appointment.getDoctorId());
+        UserDto patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
 
         MailDetails mailDetails = MailDetails.builder()
                 .subject(APPOINTMENT_CONFIRMATION)
@@ -71,24 +74,26 @@ public class AppointmentService {
         kafkaProducer.send(mailDetails);
     }
 
-    public Appointment update(UpdateAppointmentRequest updateAppointmentRequest, UUID appointmentId, Role role, UUID userId) {
+    public AppointmentDto update(UpdateAppointmentDto updateAppointmentDto, UUID appointmentId, Role role, UUID userId) {
         return appointmentRepository.findById(appointmentId)
-                .map(oldAppointment -> appointmentMapper.updateAppointment(updateAppointmentRequest, oldAppointment))
+                .map(oldAppointment -> appointmentMapper.updateAppointment(updateAppointmentDto, oldAppointment))
                 .map(appointmentRepository::save)
+                .map(appointmentMapper::toAppointmentDto)
                 .orElseThrow();
     }
 
-    public Appointment findById(UUID appointmentId, Role role, UUID userId) {
+    public AppointmentDto findById(UUID appointmentId, Role role, UUID userId) {
         if (role == PATIENT) {
             throw new RuntimeException();
         }
         return appointmentRepository.findById(appointmentId)
                 .filter(appointment -> appointment.getDoctorId().equals(userId))
+                .map(appointmentMapper::toAppointmentDto)
                 .orElseThrow();
     }
 
-    public List<FindAppointmentResponse> find(DateRange dateRange, State state, Role role, UUID userId) {
-        boolean ignoreDateRange = dateRange.equals(new DateRange());
+    public List<AppointmentDto> find(DateRangeDto dateRangeDto, State state, Role role, UUID userId) {
+        boolean ignoreDateRange = dateRangeDto.equals(new DateRangeDto(null, null));
 
         if (role == PATIENT && state == OCCUPIED) {
             List<Appointment> appointments;
@@ -96,10 +101,10 @@ public class AppointmentService {
                 appointments = appointmentRepository.findByPatientId(userId);
             } else {
                 appointments = appointmentRepository.findByPatientIdAndDateRange(
-                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+                        userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
             }
             return appointments.stream()
-                    .map(appointmentMapper::toFindAppointmentResponse)
+                    .map(appointmentMapper::toAppointmentDto)
                     .toList();
         }
         if (role == PATIENT && state == FREE) {
@@ -112,25 +117,25 @@ public class AppointmentService {
                 appointments = appointmentRepository.findByDoctorId(userId);
             } else {
                 appointments = appointmentRepository.findByDoctorIdAndDateRange(
-                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+                        userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
             }
             return appointments.stream()
-                    .map(appointmentMapper::toFindAppointmentResponse)
+                    .map(appointmentMapper::toAppointmentDto)
                     .toList();
         }
         if (role == DOCTOR && state == FREE) {
-            List<WorkingTime> workingTimes = timeServiceClient.findByDoctorId(userId);
+            List<WorkingTimeDto> workingTimeDtos = timeServiceClient.findByDoctorId(userId);
 
             List<Appointment> occupiedAppointments;
             if (ignoreDateRange) {
                 throw new RuntimeException();
             } else {
                 occupiedAppointments = appointmentRepository.findByDoctorIdAndDateRange(
-                        userId, dateRange.getFrom().atStartOfDay(), dateRange.getTo().atStartOfDay());
+                        userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
             }
 
-            return generateFreeDates(workingTimes, occupiedAppointments, dateRange).stream()
-                    .map(date -> FindAppointmentResponse.builder()
+            return generateFreeDates(workingTimeDtos, occupiedAppointments, dateRangeDto).stream()
+                    .map(date -> AppointmentDto.builder()
                             .date(date)
                             .doctorId(userId)
                             .build())
@@ -140,23 +145,23 @@ public class AppointmentService {
         throw new RuntimeException();
     }
 
-    private List<LocalDateTime> generateFreeDates(List<WorkingTime> workingTimes, List<Appointment> occupiedAppointments, DateRange dateRange) {
+    private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> workingTimeDtos, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
         List<LocalDateTime> freeDates = new ArrayList<>();
 
-        LocalDate currentDate = dateRange.getFrom();
-        LocalDate endDate = dateRange.getTo();
+        LocalDate currentDate = dateRangeDto.getFrom();
+        LocalDate endDate = dateRangeDto.getTo();
 
         while (currentDate.isBefore(endDate)) {
-            Optional<WorkingTime> workingTimeForDay = getWorkingTimeForDay(workingTimes, currentDate.getDayOfWeek());
+            Optional<WorkingTimeDto> workingTimeForDay = getWorkingTimeForDay(workingTimeDtos, currentDate.getDayOfWeek());
 
             if (workingTimeForDay.isPresent()) {
-                WorkingTime workingTime = workingTimeForDay.get();
-                LocalTime currentTime = workingTime.getStartTime();
-                LocalTime endTime = workingTime.getEndTime();
-                Integer interval = workingTime.getTimeIntervalInMinutes();
+                WorkingTimeDto workingTimeDto = workingTimeForDay.get();
+                LocalTime currentTime = workingTimeDto.getStartTime();
+                LocalTime endTime = workingTimeDto.getEndTime();
+                Integer interval = workingTimeDto.getTimeIntervalInMinutes();
 
                 while (currentTime.isBefore(endTime)) {
-                    if (!isBreak(currentTime, workingTime)) {
+                    if (!isBreak(currentTime, workingTimeDto)) {
                         freeDates.add(LocalDateTime.of(currentDate, currentTime));
                     }
                     currentTime = currentTime.plusMinutes(interval);
@@ -174,20 +179,20 @@ public class AppointmentService {
                 .toList();
     }
 
-    private boolean isBreak(LocalTime currentTime, WorkingTime workingTime) {
-        LocalTime breakStartTime = workingTime.getBreakStartTime();
-        LocalTime breakEndTime = workingTime.getBreakEndTime();
+    private boolean isBreak(LocalTime currentTime, WorkingTimeDto workingTimeDto) {
+        LocalTime breakStartTime = workingTimeDto.getBreakStartTime();
+        LocalTime breakEndTime = workingTimeDto.getBreakEndTime();
 
         if (breakStartTime == null || breakEndTime == null) {
             return false;
         }
         return currentTime.isBefore(breakEndTime) &&
-               currentTime.isAfter(breakStartTime.minusMinutes(workingTime.getTimeIntervalInMinutes()));
+               currentTime.isAfter(breakStartTime.minusMinutes(workingTimeDto.getTimeIntervalInMinutes()));
     }
 
-    private Optional<WorkingTime> getWorkingTimeForDay(List<WorkingTime> workingTimes, DayOfWeek dayOfWeek) {
-        return workingTimes.stream()
-                .filter(workingTime -> workingTime.getDay() == dayOfWeek)
+    private Optional<WorkingTimeDto> getWorkingTimeForDay(List<WorkingTimeDto> workingTimeDtos, DayOfWeek dayOfWeek) {
+        return workingTimeDtos.stream()
+                .filter(workingTimeDto -> workingTimeDto.getDay() == dayOfWeek)
                 .findFirst();
     }
 

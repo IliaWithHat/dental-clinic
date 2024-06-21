@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static org.ilia.appointmentservice.enums.Role.ADMIN;
 import static org.ilia.appointmentservice.enums.Role.PATIENT;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -39,13 +40,13 @@ public class SecurityConfiguration {
                                 "/v1/{role}/{userId}/appointment").authenticated()
 
                         .requestMatchers(POST,
-                                "/v1/{role}/{userId}/appointment").hasRole(PATIENT.name())
+                                "/v1/{role}/{userId}/appointment").hasAnyRole(PATIENT.name(), ADMIN.name())
                         .requestMatchers(PUT,
-                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasRole(PATIENT.name())
+                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
                         .requestMatchers(DELETE,
-                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasRole(PATIENT.name())
+                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
 
-                        .anyRequest().denyAll())
+                        .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
                 .sessionManagement(session -> session

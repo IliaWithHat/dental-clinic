@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.ilia.mailschedulerservice.feign.UserServiceClient;
-import org.ilia.mailschedulerservice.feign.request.LoginRequest;
+import org.ilia.mailschedulerservice.feign.request.LoginDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +35,6 @@ public class TokenService {
     String token;
 
     public void initializeToken() {
-        LoginRequest loginRequest = LoginRequest.builder().email(email).password(password).build();
-        token = userServiceClient.login(loginRequest, OWNER).getToken();
+        token = userServiceClient.login(new LoginDto(email, password), OWNER).getToken();
     }
 }

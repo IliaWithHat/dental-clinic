@@ -8,8 +8,8 @@ spring:
         spring.json.type.mapping: mailDetails:org.ilia.mailschedulerservice.entity.MailDetails
 
 keycloak:
-  email: rozhkoilia5533@gmail.com
-  password: ilia
+  email: ${KEYCLOAK_ADMIN_EMAIL}
+  password: ${KEYCLOAK_ADMIN_PASSWORD}
 
 cron.send-appointment-reminder-email: 0 0 8 * * *
 

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.ilia.userservice.configuration.KeycloakProperties;
-import org.ilia.userservice.controller.request.LoginRequest;
+import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.exception.UserNotFoundException;
@@ -119,12 +119,12 @@ public class KeycloakService {
         return clientsResource.get(clientUuid).roles().get(role.name()).getUserMembers();
     }
 
-    public String getAccessToken(LoginRequest loginRequest) {
+    public String getAccessToken(LoginDto loginDto) {
         Keycloak tempKeycloak = Keycloak.getInstance(
                 keycloakProperties.getServerUrl(),
                 keycloakProperties.getRealm(),
-                loginRequest.getEmail(),
-                loginRequest.getPassword(),
+                loginDto.getEmail(),
+                loginDto.getPassword(),
                 keycloakProperties.getClientId(),
                 keycloakProperties.getClientSecret()
         );

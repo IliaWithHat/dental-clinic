@@ -2,8 +2,8 @@ package org.ilia.timeservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.timeservice.controller.request.CreateWorkingTimeRequest;
-import org.ilia.timeservice.entity.WorkingTime;
+import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
+import org.ilia.timeservice.controller.response.WorkingTimeDto;
 import org.ilia.timeservice.mapper.WorkingTimeMapper;
 import org.ilia.timeservice.repository.WorkingTimeRepository;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,17 @@ public class WorkingTimeService {
     WorkingTimeRepository workingTimeRepository;
     WorkingTimeMapper workingTimeMapper;
 
-    public List<WorkingTime> findByDoctorId(UUID doctorId) {
-        return workingTimeRepository.findByDoctorId(doctorId);
+    public List<WorkingTimeDto> findByDoctorId(UUID doctorId) {
+        return workingTimeRepository.findByDoctorId(doctorId).stream()
+                .map(workingTimeMapper::toWorkingTimeDto)
+                .toList();
     }
 
-    public List<WorkingTime> create(List<CreateWorkingTimeRequest> createWorkingTimeRequests) {
-        return createWorkingTimeRequests.stream()
+    public List<WorkingTimeDto> create(List<CreateWorkingTimeDto> createWorkingTimeDtos) {
+        return createWorkingTimeDtos.stream()
                 .map(workingTimeMapper::toWorkingTime)
-                .peek(workingTimeRepository::save)
+                .map(workingTimeRepository::save)
+                .map(workingTimeMapper::toWorkingTimeDto)
                 .toList();
     }
 

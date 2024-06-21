@@ -2,7 +2,7 @@ package org.ilia.mailschedulerservice.feign;
 
 import org.ilia.mailschedulerservice.configuration.FeignInterceptorConfiguration;
 import org.ilia.mailschedulerservice.enums.Role;
-import org.ilia.mailschedulerservice.feign.response.FindAppointmentResponse;
+import org.ilia.mailschedulerservice.feign.response.AppointmentDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +16,6 @@ import java.util.UUID;
 public interface AppointmentServiceClient {
 
     @GetMapping("/v1/{role}/{userId}/appointment")
-    List<FindAppointmentResponse> find(@RequestParam LocalDate from, @RequestParam LocalDate to,
-                                       @PathVariable Role role, @PathVariable UUID userId);
+    List<AppointmentDto> find(@RequestParam LocalDate from, @RequestParam LocalDate to,
+                              @PathVariable Role role, @PathVariable UUID userId);
 }

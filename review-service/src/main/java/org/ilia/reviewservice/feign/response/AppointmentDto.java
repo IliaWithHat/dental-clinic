@@ -12,10 +12,13 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class FindAppointmentResponse {
+public class AppointmentDto {
 
+    UUID id;
     LocalDateTime date;
     Boolean isPatientCome;
+    String serviceInfo;
+    Integer price;
     UUID patientId;
     UUID doctorId;
 }

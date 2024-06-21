@@ -2,7 +2,7 @@ package org.ilia.appointmentservice.feign;
 
 import org.ilia.appointmentservice.configuration.FeignInterceptorConfiguration;
 import org.ilia.appointmentservice.enums.Role;
-import org.ilia.appointmentservice.feign.response.User;
+import org.ilia.appointmentservice.feign.response.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,5 +13,5 @@ import java.util.UUID;
 public interface UserServiceClient {
 
     @GetMapping("/v1/{role}/{id}")
-    User findById(@PathVariable Role role, @PathVariable UUID id);
+    UserDto findById(@PathVariable Role role, @PathVariable UUID id);
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static org.ilia.reviewservice.enums.Role.ADMIN;
 import static org.ilia.reviewservice.enums.Role.PATIENT;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -39,15 +40,15 @@ public class SecurityConfiguration {
                                 "/v1/{role}/{doctorId}/review").permitAll()
 
                         .requestMatchers(POST,
-                                "/v1/{role}/{doctorId}/review").hasRole(PATIENT.name())
+                                "/v1/{role}/{doctorId}/review").hasAnyRole(PATIENT.name(), ADMIN.name())
 
                         .requestMatchers(PUT,
-                                "/v1/{role}/{doctorId}/review/{reviewId}").hasRole(PATIENT.name())
+                                "/v1/{role}/{doctorId}/review/{reviewId}").hasAnyRole(PATIENT.name(), ADMIN.name())
 
                         .requestMatchers(DELETE,
-                                "/v1/{role}/{doctorId}/review/{reviewId}").hasRole(PATIENT.name())
+                                "/v1/{role}/{doctorId}/review/{reviewId}").hasAnyRole(PATIENT.name(), ADMIN.name())
 
-                        .anyRequest().denyAll())
+                        .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
                 .sessionManagement(session -> session

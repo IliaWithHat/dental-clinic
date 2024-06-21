@@ -3,7 +3,7 @@ package org.ilia.reviewservice.controller.request;
 import lombok.Value;
 
 @Value
-public class CreateReviewDto {
+public class CreateUpdateReviewDto {
 
     Short mark;
     String title;

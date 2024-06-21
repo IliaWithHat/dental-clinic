@@ -1,21 +1,20 @@
 package org.ilia.appointmentservice.controller.response;
 
 import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@Data
+@Value
 @Builder
-@FieldDefaults(level = PRIVATE)
-public class FindAppointmentResponse {
+public class AppointmentDto {
 
+    UUID id;
     LocalDateTime date;
     Boolean isPatientCome;
+    String serviceInfo;
+    Integer price;
     UUID patientId;
     UUID doctorId;
 }

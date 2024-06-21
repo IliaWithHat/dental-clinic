@@ -25,7 +25,7 @@ keycloak:
   server-url: http://keycloak:8001
   realm: dental-clinic-realm
   client-id: dental-clinic-client
-  client-secret: St10t32DmZStwE04v4paHNUhC2AF8Ydf
+  client-secret: ${KEYCLOAK_CLIENT_SECRET}
 
 eureka:
   instance.prefer-ip-address: true

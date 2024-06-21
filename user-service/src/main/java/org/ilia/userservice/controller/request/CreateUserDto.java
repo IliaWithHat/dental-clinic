@@ -1,15 +1,11 @@
 package org.ilia.userservice.controller.request;
 
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
+import lombok.Value;
 
 import java.time.LocalDate;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@Data
-@FieldDefaults(level = PRIVATE)
-public class CreateUserRequest {
+@Value
+public class CreateUserDto {
 
     String email;
     String firstName;

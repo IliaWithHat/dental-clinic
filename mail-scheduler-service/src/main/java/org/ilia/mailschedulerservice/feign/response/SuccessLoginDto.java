@@ -1,15 +1,15 @@
-package org.ilia.userservice.controller.response;
+package org.ilia.mailschedulerservice.feign.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = PRIVATE)
-public class LoginResponse {
+public class SuccessLoginDto {
 
     String token;
 }

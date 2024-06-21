@@ -2,16 +2,16 @@ package org.ilia.reviewservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.reviewservice.controller.request.CreateReviewDto;
-import org.ilia.reviewservice.controller.request.UpdateReviewDto;
+import org.ilia.reviewservice.controller.request.CreateUpdateReviewDto;
+import org.ilia.reviewservice.controller.response.ReviewDto;
 import org.ilia.reviewservice.entity.Review;
 import org.ilia.reviewservice.enums.Role;
 import org.ilia.reviewservice.feign.AppointmentClient;
 import org.ilia.reviewservice.mapper.ReviewMapper;
 import org.ilia.reviewservice.repository.ReviewRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,28 +30,32 @@ public class ReviewService {
     ReviewMapper reviewMapper;
     AppointmentClient appointmentClient;
 
-    public List<Review> findAll(UUID doctorId) {
-        return reviewRepository.findByDoctorId(doctorId);
+    public List<ReviewDto> findAll(UUID doctorId) {
+        return reviewRepository.findByDoctorId(doctorId).stream()
+                .map(reviewMapper::toReviewDto)
+                .toList();
     }
 
-    public Review create(CreateReviewDto createReviewDto, UUID doctorId) {
+    public ReviewDto create(CreateUpdateReviewDto createUpdateReviewDto, UUID doctorId) {
         boolean patientWasOnAppointment = appointmentClient.find(Role.PATIENT, getCurrentUserId()).stream()
                 .anyMatch(appointment -> appointment.getIsPatientCome() != null && appointment.getIsPatientCome());
         if (!patientWasOnAppointment) {
             throw new RuntimeException();
         }
 
-        Review reviewToSave = reviewMapper.toReview(createReviewDto);
+        Review reviewToSave = reviewMapper.toReview(createUpdateReviewDto);
         reviewToSave.setPatientId(getCurrentUserId());
         reviewToSave.setDoctorId(doctorId);
-        return reviewRepository.save(reviewToSave);
+        return reviewMapper.toReviewDto(reviewRepository.save(reviewToSave));
     }
 
-    public Review update(UUID reviewId, UpdateReviewDto updateReviewDto, UUID doctorId) {
+    public ReviewDto update(UUID reviewId, CreateUpdateReviewDto createUpdateReviewDto, UUID doctorId) {
         return reviewRepository.findById(reviewId)
                 .filter(review -> review.getDoctorId().equals(doctorId))
                 .filter(review -> review.getPatientId().equals(getCurrentUserId()))
-                .map(review -> reviewMapper.updateReview(updateReviewDto, review))
+                .map(review -> reviewMapper.updateReview(createUpdateReviewDto, review))
+                .map(reviewRepository::save)
+                .map(reviewMapper::toReviewDto)
                 .orElseThrow();
     }
 
@@ -62,7 +66,7 @@ public class ReviewService {
     }
 
     private UUID getCurrentUserId() {
-        BearerTokenAuthentication authentication = (BearerTokenAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return UUID.fromString(((DefaultOAuth2AuthenticatedPrincipal) authentication.getPrincipal()).getName());
     }
 }

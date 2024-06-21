@@ -2,9 +2,8 @@ package org.ilia.reviewservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.reviewservice.controller.request.CreateReviewDto;
-import org.ilia.reviewservice.controller.request.UpdateReviewDto;
-import org.ilia.reviewservice.entity.Review;
+import org.ilia.reviewservice.controller.request.CreateUpdateReviewDto;
+import org.ilia.reviewservice.controller.response.ReviewDto;
 import org.ilia.reviewservice.enums.Role;
 import org.ilia.reviewservice.service.ReviewService;
 import org.ilia.reviewservice.validation.annotation.RightRole;
@@ -26,20 +25,20 @@ public class ReviewController {
     ReviewService reviewService;
 
     @GetMapping
-    public ResponseEntity<List<Review>> findAll(@PathVariable @RightRole Role role, @PathVariable UUID doctorId) {
+    public ResponseEntity<List<ReviewDto>> findAll(@PathVariable @RightRole Role role, @PathVariable UUID doctorId) {
         return ResponseEntity.ok().body(reviewService.findAll(doctorId));
     }
 
     @PostMapping
-    public ResponseEntity<Review> create(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
-                                         @RequestBody CreateReviewDto createReviewDto) {
-        return ResponseEntity.status(CREATED).body(reviewService.create(createReviewDto, doctorId));
+    public ResponseEntity<ReviewDto> create(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
+                                            @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
+        return ResponseEntity.status(CREATED).body(reviewService.create(createUpdateReviewDto, doctorId));
     }
 
     @PutMapping("/{reviewId}")
-    public ResponseEntity<Review> update(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
-                                         @PathVariable UUID reviewId, @RequestBody UpdateReviewDto updateReviewDto) {
-        return ResponseEntity.ok().body(reviewService.update(reviewId, updateReviewDto, doctorId));
+    public ResponseEntity<ReviewDto> update(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
+                                            @PathVariable UUID reviewId, @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
+        return ResponseEntity.ok().body(reviewService.update(reviewId, createUpdateReviewDto, doctorId));
     }
 
     @DeleteMapping("/{reviewId}")

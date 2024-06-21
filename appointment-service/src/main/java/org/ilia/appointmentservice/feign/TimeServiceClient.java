@@ -1,7 +1,7 @@
 package org.ilia.appointmentservice.feign;
 
 import org.ilia.appointmentservice.configuration.FeignInterceptorConfiguration;
-import org.ilia.appointmentservice.feign.response.WorkingTime;
+import org.ilia.appointmentservice.feign.response.WorkingTimeDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,5 +13,5 @@ import java.util.UUID;
 public interface TimeServiceClient {
 
     @GetMapping("/v1/working-time/{doctorId}")
-    List<WorkingTime> findByDoctorId(@PathVariable UUID doctorId);
+    List<WorkingTimeDto> findByDoctorId(@PathVariable UUID doctorId);
 }

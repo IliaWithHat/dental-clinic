@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static org.ilia.timeservice.enums.Role.ADMIN;
 import static org.ilia.timeservice.enums.Role.OWNER;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -39,11 +40,11 @@ public class SecurityConfiguration {
                                 "/v1/working-time/{doctorId}").authenticated()
 
                         .requestMatchers(POST,
-                                "/v1/working-time").hasRole(OWNER.name())
+                                "/v1/working-time").hasAnyRole(OWNER.name(), ADMIN.name())
                         .requestMatchers(DELETE,
-                                "/v1/working-time/{doctorId}").hasRole(OWNER.name())
+                                "/v1/working-time/{doctorId}").hasAnyRole(OWNER.name(), ADMIN.name())
 
-                        .anyRequest().denyAll())
+                        .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
                 .sessionManagement(session -> session

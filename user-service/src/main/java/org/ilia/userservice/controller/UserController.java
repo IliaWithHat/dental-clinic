@@ -2,11 +2,11 @@ package org.ilia.userservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.userservice.controller.request.CreateUserRequest;
-import org.ilia.userservice.controller.request.LoginRequest;
-import org.ilia.userservice.controller.request.UpdateUserRequest;
-import org.ilia.userservice.controller.response.LoginResponse;
-import org.ilia.userservice.entity.User;
+import org.ilia.userservice.controller.request.CreateUserDto;
+import org.ilia.userservice.controller.request.LoginDto;
+import org.ilia.userservice.controller.request.UpdateUserDto;
+import org.ilia.userservice.controller.response.SuccessLoginDto;
+import org.ilia.userservice.controller.response.UserDto;
 import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.service.UserService;
 import org.ilia.userservice.validation.annotation.RightRole;
@@ -28,38 +28,38 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody CreateUserRequest createUserRequest,
-                                       @PathVariable @RightRole Role role) {
-        return ResponseEntity.status(CREATED).body(userService.create(createUserRequest, role));
+    public ResponseEntity<UserDto> create(@RequestBody CreateUserDto createUserDto,
+                                          @PathVariable @RightRole Role role) {
+        return ResponseEntity.status(CREATED).body(userService.create(createUserDto, role));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> update(@RequestBody UpdateUserRequest updateUserRequest,
-                                       @PathVariable Role role) {
-        return ResponseEntity.ok().body(userService.update(updateUserRequest, role));
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDto> update(@PathVariable Role role, @PathVariable UUID userId,
+                                          @RequestBody UpdateUserDto updateUserDto) {
+        return ResponseEntity.ok().body(userService.update(updateUserDto, role, userId));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest,
-                                               @PathVariable Role role) {
-        return ResponseEntity.ok().body(userService.login(loginRequest, role));
+    public ResponseEntity<SuccessLoginDto> login(@RequestBody LoginDto loginDto,
+                                                 @PathVariable Role role) {
+        return ResponseEntity.ok().body(userService.login(loginDto, role));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable UUID id,
-                                         @PathVariable @RightRole Role role) {
-        return ResponseEntity.ok().body(userService.findById(id, role));
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> findById(@PathVariable UUID userId,
+                                            @PathVariable @RightRole Role role) {
+        return ResponseEntity.ok().body(userService.findById(userId, role));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> findByRole(@PathVariable @RightRole Role role) {
+    public ResponseEntity<List<UserDto>> findByRole(@PathVariable @RightRole Role role) {
         return ResponseEntity.ok().body(userService.findByRole(role));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable UUID id,
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> delete(@PathVariable UUID userId,
                                     @PathVariable @RightRole Role role) {
-        userService.delete(id, role);
+        userService.delete(userId, role);
         return ResponseEntity.ok().build();
     }
 }

@@ -1,19 +1,13 @@
-package org.ilia.appointmentservice.feign.response;
+package org.ilia.timeservice.controller.response;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.Value;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@Data
-@NoArgsConstructor
-@FieldDefaults(level = PRIVATE)
-public class WorkingTime {
+@Value
+public class WorkingTimeDto {
 
     UUID id;
     DayOfWeek day;

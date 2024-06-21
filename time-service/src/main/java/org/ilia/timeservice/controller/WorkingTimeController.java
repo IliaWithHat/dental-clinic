@@ -2,8 +2,8 @@ package org.ilia.timeservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.timeservice.controller.request.CreateWorkingTimeRequest;
-import org.ilia.timeservice.entity.WorkingTime;
+import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
+import org.ilia.timeservice.controller.response.WorkingTimeDto;
 import org.ilia.timeservice.service.WorkingTimeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,13 +23,13 @@ public class WorkingTimeController {
     WorkingTimeService workingTimeService;
 
     @GetMapping("/{doctorId}")
-    public ResponseEntity<List<WorkingTime>> findByDoctorId(@PathVariable UUID doctorId) {
+    public ResponseEntity<List<WorkingTimeDto>> findByDoctorId(@PathVariable UUID doctorId) {
         return ResponseEntity.ok().body(workingTimeService.findByDoctorId(doctorId));
     }
 
     @PostMapping
-    public ResponseEntity<List<WorkingTime>> create(@RequestBody List<CreateWorkingTimeRequest> createWorkingTimeRequests) {
-        return ResponseEntity.status(CREATED).body(workingTimeService.create(createWorkingTimeRequests));
+    public ResponseEntity<List<WorkingTimeDto>> create(@RequestBody List<CreateWorkingTimeDto> createWorkingTimeDtos) {
+        return ResponseEntity.status(CREATED).body(workingTimeService.create(createWorkingTimeDtos));
     }
 
     @DeleteMapping("/{doctorId}")
