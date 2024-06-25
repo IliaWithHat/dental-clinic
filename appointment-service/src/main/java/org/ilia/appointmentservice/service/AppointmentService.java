@@ -118,7 +118,7 @@ public class AppointmentService {
                     .toList();
         }
         if (role == DOCTOR && state == FREE) {
-            List<WorkingTimeDto> workingTimeDtos = timeServiceClient.findByDoctorId(userId);
+            List<WorkingTimeDto> workingTimeDtoList = timeServiceClient.findByDoctorId(userId);
 
             List<Appointment> occupiedAppointments;
             if (ignoreDateRange) {
@@ -128,7 +128,7 @@ public class AppointmentService {
                         userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
             }
 
-            return generateFreeDates(workingTimeDtos, occupiedAppointments, dateRangeDto).stream()
+            return generateFreeDates(workingTimeDtoList, occupiedAppointments, dateRangeDto).stream()
                     .map(date -> AppointmentDto.builder()
                             .date(date)
                             .doctorId(userId)
@@ -139,14 +139,14 @@ public class AppointmentService {
         throw new RuntimeException();
     }
 
-    private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> workingTimeDtos, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
+    private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> workingTimeDtoList, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
         List<LocalDateTime> freeDates = new ArrayList<>();
 
         LocalDate currentDate = dateRangeDto.getFrom();
         LocalDate endDate = dateRangeDto.getTo();
 
         while (currentDate.isBefore(endDate)) {
-            Optional<WorkingTimeDto> workingTimeForDay = getWorkingTimeForDay(workingTimeDtos, currentDate.getDayOfWeek());
+            Optional<WorkingTimeDto> workingTimeForDay = getWorkingTimeForDay(workingTimeDtoList, currentDate.getDayOfWeek());
 
             if (workingTimeForDay.isPresent()) {
                 WorkingTimeDto workingTimeDto = workingTimeForDay.get();
@@ -184,8 +184,8 @@ public class AppointmentService {
                currentTime.isAfter(breakStartTime.minusMinutes(workingTimeDto.getTimeIntervalInMinutes()));
     }
 
-    private Optional<WorkingTimeDto> getWorkingTimeForDay(List<WorkingTimeDto> workingTimeDtos, DayOfWeek dayOfWeek) {
-        return workingTimeDtos.stream()
+    private Optional<WorkingTimeDto> getWorkingTimeForDay(List<WorkingTimeDto> workingTimeDtoList, DayOfWeek dayOfWeek) {
+        return workingTimeDtoList.stream()
                 .filter(workingTimeDto -> workingTimeDto.getDay() == dayOfWeek)
                 .findFirst();
     }

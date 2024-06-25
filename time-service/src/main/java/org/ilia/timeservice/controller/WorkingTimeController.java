@@ -34,8 +34,8 @@ public class WorkingTimeController {
     @PostMapping
     public ResponseEntity<List<WorkingTimeDto>> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                                        @PathVariable UUID doctorId,
-                                                       @RequestBody List<CreateWorkingTimeDto> createWorkingTimeDtos) {
-        return ResponseEntity.status(CREATED).body(workingTimeService.create(role, doctorId, createWorkingTimeDtos));
+                                                       @RequestBody List<CreateWorkingTimeDto> createWorkingTimeDtoList) {
+        return ResponseEntity.status(CREATED).body(workingTimeService.create(role, doctorId, createWorkingTimeDtoList));
     }
 
     @DeleteMapping

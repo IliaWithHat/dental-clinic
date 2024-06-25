@@ -30,8 +30,8 @@ public class WorkingTimeService {
                 .toList();
     }
 
-    public List<WorkingTimeDto> create(Role role, UUID doctorId, List<CreateWorkingTimeDto> createWorkingTimeDtos) {
-        return createWorkingTimeDtos.stream()
+    public List<WorkingTimeDto> create(Role role, UUID doctorId, List<CreateWorkingTimeDto> createWorkingTimeDtoList) {
+        return createWorkingTimeDtoList.stream()
                 .map(workingTimeMapper::toWorkingTime)
                 .peek(wt -> wt.setDoctorId(doctorId))
                 .map(workingTimeRepository::save)
