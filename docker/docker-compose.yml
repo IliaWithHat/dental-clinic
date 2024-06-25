@@ -12,10 +12,11 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/2-init.sql
       - dental-clinic-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: pg_isready -U postgres
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
     ports:
       - "5432:5432"
     networks:
@@ -29,7 +30,7 @@ services:
     environment:
       ALLOW_ANONYMOUS_LOGIN: yes
     healthcheck:
-      test: [ "CMD-SHELL", "nc -z localhost 2181 || exit -1" ]
+      test: nc -z localhost 2181 || exit -1
       interval: 5s
       timeout: 5s
       retries: 10
@@ -63,10 +64,11 @@ services:
     image: config-server-image
     container_name: config-server-container
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fs localhost:8000/actuator/health | grep UP || exit 1" ]
-      interval: 2s
-      timeout: 3s
+      test: curl -fs localhost:8000/actuator/health | grep UP || exit 1
+      interval: 5s
+      timeout: 5s
       retries: 10
+      start_period: 10s
     ports:
       - "8000:8000"
     networks:
@@ -93,10 +95,11 @@ services:
       KC_LOG_LEVEL: DEBUG
       KC_HEALTH_ENABLED: true
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fs localhost:8001/health | grep UP || exit 1" ]
+      test: curl -fs localhost:8001/health | grep UP || exit 1
       interval: 5s
       timeout: 5s
-      retries: 50
+      retries: 20
+      start_period: 120s
     depends_on:
       database:
         condition: service_healthy
