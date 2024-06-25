@@ -114,7 +114,7 @@ services:
     build: ../eureka-server
     image: eureka-server-image
     container_name: eureka-server-container
-    env_file: public_env_file
+    env_file: environments/public_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -129,7 +129,7 @@ services:
     build: ../gateway-server
     image: gateway-server-image
     container_name: gateway-server-container
-    env_file: public_env_file
+    env_file: environments/public_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -142,7 +142,10 @@ services:
     build: ../user-service
     image: user-service-image
     container_name: user-service-container
-    env_file: public_env_file
+    env_file:
+      - environments/public_env
+      - environments/keycloak_credentials_env
+      - environments/keycloak_secret_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -157,7 +160,10 @@ services:
     build: ../time-service
     image: time-service-image
     container_name: time-service-container
-    env_file: public_env_file
+    env_file:
+      - environments/public_env
+      - environments/time_env
+      - environments/keycloak_secret_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -172,7 +178,10 @@ services:
     build: ../appointment-service
     image: appointment-service-image
     container_name: appointment-service-container
-    env_file: public_env_file
+    env_file:
+      - environments/public_env
+      - environments/appointment_env
+      - environments/keycloak_secret_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -189,7 +198,10 @@ services:
     build: ../review-service
     image: review-service-image
     container_name: review-service-container
-    env_file: public_env_file
+    env_file:
+      - environments/public_env
+      - environments/review_env
+      - environments/keycloak_secret_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -205,8 +217,8 @@ services:
     image: mail-sender-service-image
     container_name: mail-sender-service-container
     env_file:
-      - public_env_file
-      - private_env_file
+      - environments/public_env
+      - environments/mail_sender_env
     depends_on:
       configserver:
         condition: service_healthy
@@ -219,7 +231,9 @@ services:
     build: ../mail-scheduler-service
     image: mail-scheduler-service-image
     container_name: mail-scheduler-service-container
-    env_file: public_env_file
+    env_file:
+      - environments/public_env
+      - environments/keycloak_credentials_env
     depends_on:
       configserver:
         condition: service_healthy

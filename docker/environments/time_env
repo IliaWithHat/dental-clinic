@@ -1,0 +1,4 @@
+DATABASE_URL=jdbc:postgresql://database:5432/dental_clinic_repository
+DATABASE_SCHEMA=time_service_schema
+DATABASE_USER=time_user
+DATABASE_PASSWORD=password

@@ -1,0 +1,4 @@
+DATABASE_URL=jdbc:postgresql://database:5432/dental_clinic_repository
+DATABASE_SCHEMA=review_service_schema
+DATABASE_USER=review_user
+DATABASE_PASSWORD=password

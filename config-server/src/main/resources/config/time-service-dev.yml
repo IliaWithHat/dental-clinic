@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/dental_clinic_repository
-    username: postgres
-    password: postgres
+    url: ${DATABASE_URL}?currentSchema=${DATABASE_SCHEMA}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
   jpa.open-in-view: false
 
   security:
