@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface WorkingTimeMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "doctorId", ignore = true)
     WorkingTime toWorkingTime(CreateWorkingTimeDto createWorkingTimeDto);
 
     WorkingTimeDto toWorkingTimeDto(WorkingTime workingTime);

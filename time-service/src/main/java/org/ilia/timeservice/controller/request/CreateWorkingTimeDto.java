@@ -4,7 +4,6 @@ import lombok.Value;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.UUID;
 
 @Value
 public class CreateWorkingTimeDto {
@@ -15,5 +14,4 @@ public class CreateWorkingTimeDto {
     LocalTime breakStartTime;
     LocalTime breakEndTime;
     Integer timeIntervalInMinutes;
-    UUID doctorId;
 }
