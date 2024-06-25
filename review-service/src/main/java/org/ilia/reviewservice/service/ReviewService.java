@@ -30,13 +30,13 @@ public class ReviewService {
     ReviewMapper reviewMapper;
     AppointmentClient appointmentClient;
 
-    public List<ReviewDto> findAll(UUID doctorId) {
+    public List<ReviewDto> findAll(Role role, UUID doctorId) {
         return reviewRepository.findByDoctorId(doctorId).stream()
                 .map(reviewMapper::toReviewDto)
                 .toList();
     }
 
-    public ReviewDto create(CreateUpdateReviewDto createUpdateReviewDto, UUID doctorId) {
+    public ReviewDto create(Role role, UUID doctorId, CreateUpdateReviewDto createUpdateReviewDto) {
         boolean patientWasOnAppointment = appointmentClient.find(Role.PATIENT, getCurrentUserId()).stream()
                 .anyMatch(appointment -> appointment.getIsPatientCome() != null && appointment.getIsPatientCome());
         if (!patientWasOnAppointment) {
@@ -49,7 +49,7 @@ public class ReviewService {
         return reviewMapper.toReviewDto(reviewRepository.save(reviewToSave));
     }
 
-    public ReviewDto update(UUID reviewId, CreateUpdateReviewDto createUpdateReviewDto, UUID doctorId) {
+    public ReviewDto update(Role role, UUID doctorId, UUID reviewId, CreateUpdateReviewDto createUpdateReviewDto) {
         return reviewRepository.findById(reviewId)
                 .filter(review -> review.getDoctorId().equals(doctorId))
                 .filter(review -> review.getPatientId().equals(getCurrentUserId()))
@@ -59,7 +59,7 @@ public class ReviewService {
                 .orElseThrow();
     }
 
-    public void delete(UUID reviewId, UUID doctorId) {
+    public void delete(Role role, UUID doctorId, UUID reviewId) {
         reviewRepository.findById(reviewId)
                 .filter(review -> review.getDoctorId().equals(doctorId))
                 .ifPresent(review -> reviewRepository.deleteById(reviewId));

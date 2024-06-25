@@ -48,10 +48,7 @@ public class AppointmentService {
     UserServiceClient userServiceClient;
     KafkaProducer kafkaProducer;
 
-    public AppointmentDto create(CreateAppointmentDto createAppointmentDto, Role role, UUID userId) {
-        if (role != DOCTOR) {
-            throw new RuntimeException();
-        }
+    public AppointmentDto create(Role role, UUID userId, CreateAppointmentDto createAppointmentDto) {
         Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(createAppointmentDto));
         sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
         return appointmentMapper.toAppointmentDto(savedAppointment);
@@ -74,7 +71,7 @@ public class AppointmentService {
         kafkaProducer.send(mailDetails);
     }
 
-    public AppointmentDto update(UpdateAppointmentDto updateAppointmentDto, UUID appointmentId, Role role, UUID userId) {
+    public AppointmentDto update(Role role, UUID userId, UUID appointmentId, UpdateAppointmentDto updateAppointmentDto) {
         return appointmentRepository.findById(appointmentId)
                 .map(oldAppointment -> appointmentMapper.updateAppointment(updateAppointmentDto, oldAppointment))
                 .map(appointmentRepository::save)
@@ -82,17 +79,14 @@ public class AppointmentService {
                 .orElseThrow();
     }
 
-    public AppointmentDto findById(UUID appointmentId, Role role, UUID userId) {
-        if (role == PATIENT) {
-            throw new RuntimeException();
-        }
+    public AppointmentDto findById(Role role, UUID userId, UUID appointmentId) {
         return appointmentRepository.findById(appointmentId)
                 .filter(appointment -> appointment.getDoctorId().equals(userId))
                 .map(appointmentMapper::toAppointmentDto)
                 .orElseThrow();
     }
 
-    public List<AppointmentDto> find(DateRangeDto dateRangeDto, State state, Role role, UUID userId) {
+    public List<AppointmentDto> find(Role role, UUID userId, DateRangeDto dateRangeDto, State state) {
         boolean ignoreDateRange = dateRangeDto.equals(new DateRangeDto(null, null));
 
         if (role == PATIENT && state == OCCUPIED) {

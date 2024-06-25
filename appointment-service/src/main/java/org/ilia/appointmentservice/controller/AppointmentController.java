@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.ilia.appointmentservice.enums.Role.DOCTOR;
+import static org.ilia.appointmentservice.enums.Role.PATIENT;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -28,39 +30,39 @@ public class AppointmentController {
     AppointmentService appointmentService;
 
     @PostMapping
-    public ResponseEntity<AppointmentDto> create(@RequestBody CreateAppointmentDto createAppointmentDto,
-                                                 @PathVariable @RightRole Role role,
-                                                 @PathVariable UUID userId) {
-        return ResponseEntity.status(CREATED).body(appointmentService.create(createAppointmentDto, role, userId));
+    public ResponseEntity<AppointmentDto> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                                 @PathVariable UUID userId,
+                                                 @RequestBody CreateAppointmentDto createAppointmentDto) {
+        return ResponseEntity.status(CREATED).body(appointmentService.create(role, userId, createAppointmentDto));
     }
 
     @PutMapping("/{appointmentId}")
-    public ResponseEntity<AppointmentDto> update(@RequestBody UpdateAppointmentDto updateAppointmentDto,
+    public ResponseEntity<AppointmentDto> update(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                                 @PathVariable UUID userId,
                                                  @PathVariable UUID appointmentId,
-                                                 @PathVariable @RightRole Role role,
-                                                 @PathVariable UUID userId) {
-        return ResponseEntity.ok().body(appointmentService.update(updateAppointmentDto, appointmentId, role, userId));
+                                                 @RequestBody UpdateAppointmentDto updateAppointmentDto) {
+        return ResponseEntity.ok().body(appointmentService.update(role, userId, appointmentId, updateAppointmentDto));
     }
 
     @GetMapping("/{appointmentId}")
-    public ResponseEntity<AppointmentDto> get(@PathVariable UUID appointmentId,
-                                              @PathVariable @RightRole Role role,
-                                              @PathVariable UUID userId) {
-        return ResponseEntity.ok().body(appointmentService.findById(appointmentId, role, userId));
+    public ResponseEntity<AppointmentDto> findById(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                                   @PathVariable UUID userId,
+                                                   @PathVariable UUID appointmentId) {
+        return ResponseEntity.ok().body(appointmentService.findById(role, userId, appointmentId));
     }
 
     @GetMapping
-    public ResponseEntity<List<AppointmentDto>> find(@ModelAttribute DateRangeDto dateRangeDto,
-                                                     @RequestParam(required = false, defaultValue = "occupied") State state,
-                                                     @PathVariable @RightRole Role role,
-                                                     @PathVariable UUID userId) {
-        return ResponseEntity.ok().body(appointmentService.find(dateRangeDto, state, role, userId));
+    public ResponseEntity<List<AppointmentDto>> find(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
+                                                     @PathVariable UUID userId,
+                                                     @ModelAttribute DateRangeDto dateRangeDto,
+                                                     @RequestParam(required = false, defaultValue = "occupied") State state) {
+        return ResponseEntity.ok().body(appointmentService.find(role, userId, dateRangeDto, state));
     }
 
     @DeleteMapping("/{appointmentId}")
-    public ResponseEntity<?> delete(@PathVariable UUID appointmentId,
-                                    @PathVariable @RightRole Role role,
-                                    @PathVariable UUID userId) {
+    public ResponseEntity<?> delete(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                    @PathVariable UUID userId,
+                                    @PathVariable UUID appointmentId) {
         appointmentService.delete(appointmentId, role, userId);
         return ResponseEntity.ok().build();
     }

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.ilia.userservice.enums.Role.DOCTOR;
+import static org.ilia.userservice.enums.Role.PATIENT;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -28,37 +30,38 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> create(@RequestBody CreateUserDto createUserDto,
-                                          @PathVariable @RightRole Role role) {
+    public ResponseEntity<UserDto> create(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
+                                          @RequestBody CreateUserDto createUserDto) {
         return ResponseEntity.status(CREATED).body(userService.create(createUserDto, role));
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> update(@PathVariable Role role, @PathVariable UUID userId,
+    public ResponseEntity<UserDto> update(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
+                                          @PathVariable UUID userId,
                                           @RequestBody UpdateUserDto updateUserDto) {
         return ResponseEntity.ok().body(userService.update(updateUserDto, role, userId));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<SuccessLoginDto> login(@RequestBody LoginDto loginDto,
-                                                 @PathVariable Role role) {
+    public ResponseEntity<SuccessLoginDto> login(@PathVariable Role role,
+                                                 @RequestBody LoginDto loginDto) {
         return ResponseEntity.ok().body(userService.login(loginDto, role));
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> findById(@PathVariable UUID userId,
-                                            @PathVariable @RightRole Role role) {
+    public ResponseEntity<UserDto> findById(@PathVariable Role role,
+                                            @PathVariable UUID userId) {
         return ResponseEntity.ok().body(userService.findById(userId, role));
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> findByRole(@PathVariable @RightRole Role role) {
+    public ResponseEntity<List<UserDto>> findByRole(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role) {
         return ResponseEntity.ok().body(userService.findByRole(role));
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> delete(@PathVariable UUID userId,
-                                    @PathVariable @RightRole Role role) {
+    public ResponseEntity<?> delete(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
+                                    @PathVariable UUID userId) {
         userService.delete(userId, role);
         return ResponseEntity.ok().build();
     }

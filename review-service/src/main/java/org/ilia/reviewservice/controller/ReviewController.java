@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.ilia.reviewservice.enums.Role.DOCTOR;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -25,26 +26,31 @@ public class ReviewController {
     ReviewService reviewService;
 
     @GetMapping
-    public ResponseEntity<List<ReviewDto>> findAll(@PathVariable @RightRole Role role, @PathVariable UUID doctorId) {
-        return ResponseEntity.ok().body(reviewService.findAll(doctorId));
+    public ResponseEntity<List<ReviewDto>> findAll(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                                   @PathVariable UUID doctorId) {
+        return ResponseEntity.ok().body(reviewService.findAll(role, doctorId));
     }
 
     @PostMapping
-    public ResponseEntity<ReviewDto> create(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
+    public ResponseEntity<ReviewDto> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                            @PathVariable UUID doctorId,
                                             @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
-        return ResponseEntity.status(CREATED).body(reviewService.create(createUpdateReviewDto, doctorId));
+        return ResponseEntity.status(CREATED).body(reviewService.create(role, doctorId, createUpdateReviewDto));
     }
 
     @PutMapping("/{reviewId}")
-    public ResponseEntity<ReviewDto> update(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
-                                            @PathVariable UUID reviewId, @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
-        return ResponseEntity.ok().body(reviewService.update(reviewId, createUpdateReviewDto, doctorId));
+    public ResponseEntity<ReviewDto> update(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                            @PathVariable UUID doctorId,
+                                            @PathVariable UUID reviewId,
+                                            @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
+        return ResponseEntity.ok().body(reviewService.update(role, doctorId, reviewId, createUpdateReviewDto));
     }
 
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<?> delete(@PathVariable @RightRole Role role, @PathVariable UUID doctorId,
+    public ResponseEntity<?> delete(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
+                                    @PathVariable UUID doctorId,
                                     @PathVariable UUID reviewId) {
-        reviewService.delete(reviewId, doctorId);
+        reviewService.delete(role, doctorId, reviewId);
         return ResponseEntity.ok().build();
     }
 }

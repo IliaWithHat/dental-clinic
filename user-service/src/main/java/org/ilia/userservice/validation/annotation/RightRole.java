@@ -2,6 +2,7 @@ package org.ilia.userservice.validation.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.validation.implementation.RightRoleValidator;
 
 import java.lang.annotation.ElementType;
@@ -14,9 +15,11 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = RightRoleValidator.class)
 public @interface RightRole {
 
-    String message() default "Path param can only be 'patient' or 'doctor'";
+    String message() default "Incorrect 'role'";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    Role[] allowedRoles() default {};
 }
