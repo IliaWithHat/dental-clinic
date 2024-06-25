@@ -9,7 +9,9 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - ./sql/keycloak.sql:/docker-entrypoint-initdb.d/1-keycloak.sql
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/2-init.sql
+      - ./sql/init-appointment_service.sql:/docker-entrypoint-initdb.d/2-init.sql
+      - ./sql/init-review_service.sql:/docker-entrypoint-initdb.d/3-init.sql
+      - ./sql/init-time_service.sql:/docker-entrypoint-initdb.d/4-init.sql
       - dental-clinic-data:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -U postgres
@@ -83,8 +85,8 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
 
-      KEYCLOAK_DATABASE_USER: postgres
-      KEYCLOAK_DATABASE_PASSWORD: postgres
+      KEYCLOAK_DATABASE_USER: keycloak_user
+      KEYCLOAK_DATABASE_PASSWORD: password
       KEYCLOAK_DATABASE_NAME: keycloak
       KEYCLOAK_DATABASE_HOST: database
 
@@ -92,7 +94,7 @@ services:
       KC_HOSTNAME_URL: http://keycloak:8001
       KC_HOSTNAME_ADMIN_URL: http://keycloak:8001
 
-      KC_LOG_LEVEL: DEBUG
+      KC_LOG_LEVEL: INFO
       KC_HEALTH_ENABLED: true
     healthcheck:
       test: curl -fs localhost:8001/health | grep UP || exit 1
