@@ -45,13 +45,13 @@ WorkingTime {
     Int doctorId
 }
 
-POST /working-time
+POST /{role}/{doctorId}/working-time
 void createWorkingTime(List<WorkingTime>) -> установить рабочее время врача
 
-DELETE /working-time/{doctorId}
+DELETE /{role}/{doctorId}/working-time
 void deleteWorkingTime(Int doctorId) -> удалить рабочее время врача
 
-GET /working-time/{doctorId}
+GET /{role}/{doctorId}/working-time
 List<WorkingTime> findByDoctorId(Int doctorId) -> найти рабочее время врача
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -72,10 +72,10 @@ DateRange {
     LocalDate to
 }
 
-POST /{role}/{patientId}/appointment
+POST /{role}/{doctorId}/appointment
 Appointment createAppointment(Appointment) -> создать запись к врачу
 
-PUT /{role}/{patientId}/appointment/{id}
+PUT /{role}/{doctorId}/appointment/{id}
 Appointment updateAppointment(Appointment) -> обновить запись
 
 DELETE /{role}/{patientId}/appointment/{id}
