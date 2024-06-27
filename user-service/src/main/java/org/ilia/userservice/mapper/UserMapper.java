@@ -22,9 +22,9 @@ public interface UserMapper {
     User toUser(CreateUserDto createUserDto);
 
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "birthDate", expression = "java(getLocalDateFromMap(\"birthDate\", userRepresentation.getAttributes()))")
-    @Mapping(target = "isWorking", expression = "java(getValueFromMap(\"isWorking\", userRepresentation.getAttributes()))")
-    @Mapping(target = "phoneNumber", expression = "java(getValueFromMap(\"phoneNumber\", userRepresentation.getAttributes()))")
+    @Mapping(target = "birthDate", expression = "java(getBirthDateFromMap(userRepresentation.getAttributes()))")
+    @Mapping(target = "phoneNumber", expression = "java(getPhoneNumberFromMap(userRepresentation.getAttributes()))")
+    @Mapping(target = "isWorking", expression = "java(getIsWorkingFromMap(userRepresentation.getAttributes()))")
     @Mapping(target = "role", source = "role")
     UserDto toUserDto(UserRepresentation userRepresentation, Role role, UUID id);
 
@@ -32,12 +32,16 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     User toUser(UpdateUserDto updateUserDto, UUID id);
 
-    default String getValueFromMap(String param, Map<String, List<String>> map) {
-        List<String> value = map.get(param);
-        return value == null ? null : value.getFirst();
+    default LocalDate getBirthDateFromMap(Map<String, List<String>> map) {
+        return LocalDate.parse(map.get("birthDate").getFirst());
     }
 
-    default LocalDate getLocalDateFromMap(String param, Map<String, List<String>> map) {
-        return LocalDate.parse(map.get(param).getFirst());
+    default String getPhoneNumberFromMap(Map<String, List<String>> map) {
+        return map.get("phoneNumber").getFirst();
+    }
+
+    default Boolean getIsWorkingFromMap(Map<String, List<String>> map) {
+        List<String> value = map.get("isWorking");
+        return value == null ? null : Boolean.parseBoolean(value.getFirst());
     }
 }

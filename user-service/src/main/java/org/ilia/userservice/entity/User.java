@@ -19,7 +19,7 @@ public class User {
     String lastName;
     LocalDate birthDate;
     String phoneNumber;
-    String isWorking;
+    Boolean isWorking;
     String password;
     Role role;
 }

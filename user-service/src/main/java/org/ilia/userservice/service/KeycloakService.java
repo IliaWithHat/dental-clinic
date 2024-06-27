@@ -1,6 +1,7 @@
 package org.ilia.userservice.service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -9,7 +10,6 @@ import org.ilia.userservice.configuration.KeycloakProperties;
 import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
-import org.ilia.userservice.exception.UserNotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientsResource;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -36,15 +36,18 @@ public class KeycloakService {
     UsersResource usersResource;
     @NonFinal
     ClientsResource clientsResource;
+    @NonFinal
+    String clientId;
 
     @PostConstruct
     private void init() {
         RealmResource realmResource = keycloak.realm(keycloakProperties.getRealm());
         usersResource = realmResource.users();
         clientsResource = realmResource.clients();
+        clientId = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
     }
 
-    public UUID createUser(User user, Role role) {
+    public UUID createUser(Role role, User user) {
         UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
         setCredentialsToUserRepresentation(user.getPassword(), userRepresentation);
 
@@ -69,7 +72,7 @@ public class KeycloakService {
         userRepresentation.setEmail(user.getEmail());
         userRepresentation.setFirstName(user.getFirstName());
         userRepresentation.setLastName(user.getLastName());
-        userRepresentation.setAttributes(addAttributes(user));
+        userRepresentation.setAttributes(getAttributes(user));
         userRepresentation.setEnabled(true);
         userRepresentation.setEmailVerified(true);
 
@@ -85,38 +88,49 @@ public class KeycloakService {
         userRepresentation.setCredentials(List.of(credentialRepresentation));
     }
 
-    private Map<String, List<String>> addAttributes(User user) {
+    private Map<String, List<String>> getAttributes(User user) {
         HashMap<String, List<String>> attributes = new HashMap<>();
         attributes.put("birthDate", List.of(user.getBirthDate().toString()));
         attributes.put("phoneNumber", List.of(user.getPhoneNumber()));
         if (user.getIsWorking() != null) {
-            attributes.put("isWorking", List.of(user.getIsWorking()));
+            attributes.put("isWorking", List.of(user.getIsWorking().toString()));
         }
         return attributes;
     }
 
     private void addRoleToUser(Role role, String userId) {
-        String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
-        RoleRepresentation roleRepresentation = clientsResource.get(clientUuid).roles().get(role.name()).toRepresentation();
-        usersResource.get(userId).roles().clientLevel(clientUuid).add(Collections.singletonList(roleRepresentation));
+        RoleRepresentation roleRepresentation = clientsResource.get(clientId).roles().get(role.name()).toRepresentation();
+        usersResource.get(userId).roles().clientLevel(clientId).add(List.of(roleRepresentation));
     }
 
-    public UserRepresentation getUserByEmail(String email) {
+    public Optional<UserRepresentation> getUserByEmail(String email) {
         List<UserRepresentation> userRepresentations = usersResource.searchByEmail(email, true);
-        if (userRepresentations.isEmpty()) {
-            throw new UserNotFoundException("User not found by this email: " + email);
+        if (!userRepresentations.isEmpty()) {
+            return Optional.of(userRepresentations.getFirst());
         } else {
-            return userRepresentations.getFirst();
+            return Optional.empty();
         }
     }
 
-    public UserRepresentation getUserById(UUID id) {
-        return usersResource.get(id.toString()).toRepresentation();
+    public Optional<UserRepresentation> getUserById(UUID id) {
+        UserRepresentation userRepresentation;
+        try {
+            userRepresentation = usersResource.get(id.toString()).toRepresentation();
+        } catch (NotFoundException e) {
+            return Optional.empty();
+        }
+        return Optional.of(userRepresentation);
+    }
+
+    public Role getUserRoleByUserId(UUID userId) {
+        List<RoleRepresentation> roles = usersResource.get(userId.toString()).roles().clientLevel(clientId).listAll();
+        return roles.stream()
+                .map(roleRepresentation -> Role.valueOf(roleRepresentation.getName()))
+                .findAny().orElseThrow();
     }
 
     public List<UserRepresentation> getUsersByRole(Role role) {
-        String clientUuid = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
-        return clientsResource.get(clientUuid).roles().get(role.name()).getUserMembers();
+        return clientsResource.get(clientId).roles().get(role.name()).getUserMembers();
     }
 
     public String getAccessToken(LoginDto loginDto) {

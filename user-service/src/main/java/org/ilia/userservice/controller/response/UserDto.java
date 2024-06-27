@@ -15,6 +15,6 @@ public class UserDto {
     String lastName;
     LocalDate birthDate;
     String phoneNumber;
-    String isWorking;
+    Boolean isWorking;
     Role role;
 }
