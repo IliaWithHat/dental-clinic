@@ -1,5 +1,6 @@
 package org.ilia.reviewservice.configuration;
 
+import org.ilia.reviewservice.enums.Role;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -78,8 +79,7 @@ public class SecurityConfiguration {
         private Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
             Map<String, Map<String, List<String>>> clientAndRoles = principal.getAttribute("resource_access");
             return clientAndRoles.get(clientId).get("roles").stream()
-                    .map(str -> "ROLE_" + str)
-                    .map(SimpleGrantedAuthority::new)
+                    .map(Role::valueOf)
                     .collect(toList());
         }
     }
