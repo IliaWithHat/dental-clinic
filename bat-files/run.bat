@@ -4,7 +4,13 @@ cd ..
 echo.
 echo Starting docker containers...
 cd docker
-docker-compose up -d
+
+if "%1"=="" (
+    docker-compose up -d
+) else (
+    docker-compose up -d %*
+)
+
 cd ..
 
 cd bat-files

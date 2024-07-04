@@ -1,32 +1,22 @@
 @echo off
 
-if "%~1"=="" (
-    echo No service name provided. Usage: restart-any-service.bat ^<service-name^>
+if "%1"=="" (
+    echo No service name provided. Usage: restart-service.bat ^<service-name^>
     goto :eof
 )
 
-:: Set the service name from the first parameter
-set "SERVICE_NAME=%~1"
+set SERVICES_LIST=%*
+set DOCKERHUB_USERNAME=iliawithhat
 
-:: Define the Docker Compose service name without hyphens
-set "COMPOSE_SERVICE_NAME=%SERVICE_NAME:-=%"
+for %%s in (%SERVICES_LIST%) do (
+    echo.
+    echo Stopping and removing %%s from Docker...
+    docker stop %%s-container
+    docker rm %%s-container
+    docker rmi %DOCKERHUB_USERNAME%/%%s
+)
 
-echo.
-echo Stopping and removing %SERVICE_NAME% from Docker...
-docker stop %SERVICE_NAME%-container
-docker rm %SERVICE_NAME%-container
-docker rmi %SERVICE_NAME%-image
-
-cd ..
-cd "%SERVICE_NAME%"
-echo.
-echo Building %SERVICE_NAME%...
-call ./gradlew.bat bootJar
-cd ..
-
-cd ./docker
-echo.
-echo Starting %SERVICE_NAME% in Docker...
-docker-compose up -d %COMPOSE_SERVICE_NAME%
+call build-and-push.bat %*
+call run.bat %*
 
 :eof
