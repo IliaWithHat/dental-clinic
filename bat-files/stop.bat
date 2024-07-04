@@ -1,19 +1,27 @@
 @echo off
 
 if "%1"=="all" (
-    echo.
-    echo Stopping all Docker containers...
-    docker stop postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container review-service-container mail-sender-service-container mail-scheduler-service-container
+    cd ../docker
 
     echo.
-    echo Removing all Docker containers...
-    docker rm postgres-container zookeeper-container kafka-container keycloak-container config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container review-service-container mail-sender-service-container mail-scheduler-service-container
-) else (
-    echo.
-    echo Stopping specific Docker containers...
-    docker stop config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container review-service-container mail-sender-service-container mail-scheduler-service-container
+    echo Stopping and removing all Docker containers...
+    docker-compose down --volumes=false
 
-    echo.
-    echo Removing specific Docker containers...
-    docker rm config-server-container eureka-server-container gateway-server-container user-service-container time-service-container appointment-service-container review-service-container mail-sender-service-container mail-scheduler-service-container
+    cd ../bat-files
+
+    goto :eof
 )
+
+set /p SERVICES_LIST=< services.txt
+
+for %%s in (%SERVICES_LIST%) do (
+    echo.
+    echo Stopping %%s-container
+    docker stop %%s-container
+
+    echo.
+    echo Removing %%s-container
+    docker rm %%s-container
+)
+
+:eof

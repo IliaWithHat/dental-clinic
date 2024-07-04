@@ -1,5 +1,10 @@
 @echo off
 
-echo.
-echo Removing Docker images...
-docker rmi config-server-image eureka-server-image gateway-server-image user-service-image time-service-image appointment-service-image review-service-image mail-sender-service-image mail-scheduler-service-image
+set /p SERVICES_LIST=< services.txt
+set DOCKERHUB_USERNAME=iliawithhat
+
+for %%s in (%SERVICES_LIST%) do (
+    echo.
+    echo Removing %%s
+    docker rmi %DOCKERHUB_USERNAME%/%%s
+)
