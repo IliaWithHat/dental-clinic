@@ -1,0 +1,1 @@
+config-server eureka-server gateway-server user-service time-service appointment-service review-service mail-sender-service mail-scheduler-service

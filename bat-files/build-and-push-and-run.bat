@@ -7,3 +7,4 @@ if "%1"=="" (
     call ./build.bat %*
     call ./push.bat %*
 )
+call ./run.bat

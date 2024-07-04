@@ -1,9 +1,14 @@
 @echo off
+
+if "%1"=="" (
+    set /p SERVICES_LIST=< services.txt
+) else (
+    set SERVICES_LIST=%*
+)
+
 cd ..
 
-set SERVICES=config-server eureka-server gateway-server user-service time-service appointment-service review-service mail-sender-service mail-scheduler-service
-
-for %%s in (%SERVICES%) do (
+for %%s in (%SERVICES_LIST%) do (
     echo.
     echo Building %%s...
     cd %%s

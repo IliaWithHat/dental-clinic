@@ -1,22 +1,28 @@
 @echo off
+
+if "%1"=="" (
+    set /p SERVICES_LIST=< services.txt
+) else (
+    set SERVICES_LIST=%*
+)
+
 cd ..
 
 set DOCKERHUB_USERNAME=iliawithhat
-set SERVICES=config-server eureka-server gateway-server user-service time-service appointment-service review-service mail-sender-service mail-scheduler-service
 
-for %%s in (%SERVICES%) do (
+for %%s in (%SERVICES_LIST%) do (
     cd %%s
 
     echo.
-    echo Building image
+    echo Building image %%s
     docker build -t %%s .
 
     echo.
-    echo Setting tag to image
+    echo Setting tag to image %%s
     docker tag %%s:latest %DOCKERHUB_USERNAME%/%%s:latest
 
     echo.
-    echo Pushing image to Docker Hub
+    echo Pushing image %%s to Docker Hub
     docker push %DOCKERHUB_USERNAME%/%%s:latest
 
     echo.
