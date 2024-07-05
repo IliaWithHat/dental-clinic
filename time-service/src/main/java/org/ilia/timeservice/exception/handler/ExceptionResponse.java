@@ -1,4 +1,4 @@
-package org.ilia.userservice.exception.handler;
+package org.ilia.timeservice.exception.handler;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

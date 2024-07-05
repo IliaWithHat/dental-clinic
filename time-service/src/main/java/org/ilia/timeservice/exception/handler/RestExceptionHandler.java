@@ -1,18 +1,12 @@
-package org.ilia.userservice.exception.handler;
+package org.ilia.timeservice.exception.handler;
 
-import org.ilia.userservice.exception.exceptions.InvalidIsWorkingFieldException;
-import org.ilia.userservice.exception.exceptions.UserAlreadyExistException;
-import org.ilia.userservice.exception.exceptions.UserNotFoundException;
-import org.ilia.userservice.exception.exceptions.UserNotHavePermissionException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -20,10 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -57,32 +48,5 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public final ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserNotHavePermissionException.class)
-    public final ResponseEntity<Object> handleUserNotHavePermissionException(UserNotHavePermissionException ex) {
-        HttpStatus status = FORBIDDEN;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(InvalidIsWorkingFieldException.class)
-    public final ResponseEntity<Object> handleInvalidIsWorkingFieldException(InvalidIsWorkingFieldException ex) {
-        Map<String, String> error = Map.of("isWorking", ex.getMessage());
-        return ResponseEntity.status(BAD_REQUEST).body(error);
     }
 }

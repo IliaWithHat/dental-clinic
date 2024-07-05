@@ -11,25 +11,25 @@ import java.time.LocalDate;
 @Value
 public class CreateUserDto {
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "email must not be blank")
+    @Email(message = "not a well-formed email address")
     String email;
 
-    @NotBlank
+    @NotBlank(message = "firstName must not be blank")
     String firstName;
 
-    @NotBlank
+    @NotBlank(message = "lastName must not be blank")
     String lastName;
 
-    @NotNull
-    @Past
+    @NotNull(message = "birthDate must not be null")
+    @Past(message = "birthDate must be a past date")
     LocalDate birthDate;
 
-    @NotBlank
+    @NotBlank(message = "phoneNumber must not be blank")
     String phoneNumber;
 
     Boolean isWorking;
 
-    @NotBlank
+    @NotBlank(message = "password must not be blank")
     String password;
 }

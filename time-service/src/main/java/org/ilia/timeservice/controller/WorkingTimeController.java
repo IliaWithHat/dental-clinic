@@ -1,5 +1,7 @@
 package org.ilia.timeservice.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
@@ -34,7 +36,7 @@ public class WorkingTimeController {
     @PostMapping
     public ResponseEntity<List<WorkingTimeDto>> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                                        @PathVariable UUID doctorId,
-                                                       @RequestBody List<CreateWorkingTimeDto> createWorkingTimeDtoList) {
+                                                       @RequestBody @NotEmpty List<@Valid CreateWorkingTimeDto> createWorkingTimeDtoList) {
         return ResponseEntity.status(CREATED).body(workingTimeService.create(role, doctorId, createWorkingTimeDtoList));
     }
 

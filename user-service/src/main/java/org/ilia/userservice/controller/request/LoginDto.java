@@ -7,10 +7,10 @@ import lombok.Value;
 @Value
 public class LoginDto {
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "email must not be blank")
+    @Email(message = "not a well-formed email address")
     String email;
 
-    @NotBlank
+    @NotBlank(message = "password must not be blank")
     String password;
 }
