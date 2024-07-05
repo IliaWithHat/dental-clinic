@@ -1,8 +1,8 @@
 package org.ilia.timeservice.exception.handler;
 
-import org.ilia.timeservice.exception.exceptions.UserNotFoundException;
-import org.ilia.timeservice.exception.exceptions.WorkingTimeAlreadyExistException;
-import org.ilia.timeservice.exception.exceptions.WorkingTimeNotFoundException;
+import org.ilia.timeservice.exception.UserNotFoundException;
+import org.ilia.timeservice.exception.WorkingTimeAlreadyExistException;
+import org.ilia.timeservice.exception.WorkingTimeNotFoundException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

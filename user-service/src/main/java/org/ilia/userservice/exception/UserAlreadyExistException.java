@@ -1,4 +1,4 @@
-package org.ilia.userservice.exception.exceptions;
+package org.ilia.userservice.exception;
 
 public class UserAlreadyExistException extends RuntimeException {
 

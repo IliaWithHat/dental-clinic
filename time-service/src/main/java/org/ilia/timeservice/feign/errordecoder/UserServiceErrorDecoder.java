@@ -6,7 +6,7 @@ import feign.codec.ErrorDecoder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
-import org.ilia.timeservice.exception.exceptions.UserNotFoundException;
+import org.ilia.timeservice.exception.UserNotFoundException;
 import org.ilia.timeservice.exception.handler.ExceptionResponse;
 
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package org.ilia.timeservice.exception.exceptions;
+package org.ilia.timeservice.exception;
 
 public class WorkingTimeAlreadyExistException extends RuntimeException {
 

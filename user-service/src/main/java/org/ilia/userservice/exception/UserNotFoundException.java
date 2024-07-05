@@ -1,4 +1,4 @@
-package org.ilia.timeservice.exception.exceptions;
+package org.ilia.userservice.exception;
 
 public class UserNotFoundException extends RuntimeException {
 

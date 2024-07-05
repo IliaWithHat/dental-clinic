@@ -1,9 +1,9 @@
 package org.ilia.userservice.exception.handler;
 
-import org.ilia.userservice.exception.exceptions.InvalidIsWorkingFieldException;
-import org.ilia.userservice.exception.exceptions.UserAlreadyExistException;
-import org.ilia.userservice.exception.exceptions.UserNotFoundException;
-import org.ilia.userservice.exception.exceptions.UserNotHavePermissionException;
+import org.ilia.userservice.exception.InvalidIsWorkingFieldException;
+import org.ilia.userservice.exception.UserAlreadyExistException;
+import org.ilia.userservice.exception.UserNotFoundException;
+import org.ilia.userservice.exception.UserNotHavePermissionException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

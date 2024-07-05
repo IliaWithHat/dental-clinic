@@ -8,7 +8,7 @@ import org.ilia.userservice.controller.request.UpdateUserDto;
 import org.ilia.userservice.controller.response.SuccessLoginDto;
 import org.ilia.userservice.controller.response.UserDto;
 import org.ilia.userservice.enums.Role;
-import org.ilia.userservice.exception.exceptions.InvalidIsWorkingFieldException;
+import org.ilia.userservice.exception.InvalidIsWorkingFieldException;
 import org.ilia.userservice.service.UserService;
 import org.ilia.userservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
