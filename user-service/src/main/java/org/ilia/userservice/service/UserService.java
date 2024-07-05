@@ -39,16 +39,16 @@ public class UserService {
         verifyUserPermissionForCreateAction(role);
         verifyUserNotExistByEmail(createUserDto.getEmail());
 
-        UUID userId = keycloakService.createUser(role, userMapper.toUser(createUserDto));
-        return findById(role, userId);
+        UserRepresentation createdUser = keycloakService.createUser(role, userMapper.toUser(createUserDto));
+        return userMapper.toUserDto(createdUser, role);
     }
 
     public UserDto update(Role role, UUID userId, UpdateUserDto updateUserDto) {
         verifyUserPermissionForUpdateAction(userId, role);
         verifyUserExistByUserIdAndRole(userId, role);
 
-        keycloakService.updateUser(userMapper.toUser(updateUserDto, userId));
-        return findById(role, userId);
+        UserRepresentation updatedUser = keycloakService.updateUser(userMapper.toUser(updateUserDto, userId));
+        return userMapper.toUserDto(updatedUser, role);
     }
 
     public SuccessLoginDto login(Role role, LoginDto loginDto) {
@@ -59,12 +59,12 @@ public class UserService {
 
     public UserDto findById(Role role, UUID userId) {
         UserRepresentation userRepresentation = verifyUserExistByUserIdAndRole(userId, role);
-        return userMapper.toUserDto(userRepresentation, role, userId);
+        return userMapper.toUserDto(userRepresentation, role);
     }
 
     public List<UserDto> findByRole(Role role) {
         return keycloakService.getUsersByRole(role).stream()
-                .map(user -> userMapper.toUserDto(user, role, UUID.fromString(user.getId())))
+                .map(user -> userMapper.toUserDto(user, role))
                 .toList();
     }
 
@@ -118,7 +118,7 @@ public class UserService {
         }
         return authentication.getAuthorities().stream()
                 .map(Role.class::cast)
-                .toList().getFirst();
+                .findFirst().get();
     }
 
     private void verifyUserNotExistByEmail(String email) {

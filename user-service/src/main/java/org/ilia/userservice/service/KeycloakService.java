@@ -20,6 +20,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.keycloak.representations.idm.CredentialRepresentation.PASSWORD;
@@ -38,6 +39,8 @@ public class KeycloakService {
     ClientsResource clientsResource;
     @NonFinal
     String clientId;
+    @NonFinal
+    Map<Role, RoleRepresentation> allRoles;
 
     @PostConstruct
     private void init() {
@@ -45,30 +48,31 @@ public class KeycloakService {
         usersResource = realmResource.users();
         clientsResource = realmResource.clients();
         clientId = clientsResource.findByClientId(keycloakProperties.getClientId()).getFirst().getId();
+        allRoles = clientsResource.get(clientId).roles().list().stream()
+                .collect(Collectors.toMap(r -> Role.valueOf(r.getName()), r -> r));
     }
 
-    public UUID createUser(Role role, User user) {
-        UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
-        setCredentialsToUserRepresentation(user.getPassword(), userRepresentation);
+    public UserRepresentation createUser(Role role, User user) {
+        UserRepresentation userToSave = mapUserToUserRepresentation(user);
+        setCredentialsToUserRepresentation(user.getPassword(), userToSave);
 
-        try (Response response = usersResource.create(userRepresentation)) {
-            String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-            addRoleToUser(role, userId);
-            return UUID.fromString(userId);
+        String userId;
+        try (Response response = usersResource.create(userToSave)) {
+            userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
         }
+        addRoleToUser(role, userId);
+        return usersResource.get(userId).toRepresentation();
     }
 
-    public void updateUser(User user) {
-        UserRepresentation userRepresentation = mapUserToUserRepresentation(user);
-        usersResource.get(user.getId().toString()).update(userRepresentation);
-    }
-
-    public void deleteUser(UUID id) {
-        usersResource.delete(id.toString()).close();
+    public UserRepresentation updateUser(User user) {
+        UserRepresentation userToUpdate = mapUserToUserRepresentation(user);
+        usersResource.get(user.getId().toString()).update(userToUpdate);
+        return usersResource.get(userToUpdate.getId()).toRepresentation();
     }
 
     private UserRepresentation mapUserToUserRepresentation(User user) {
         UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setId(user.getId().toString());
         userRepresentation.setEmail(user.getEmail());
         userRepresentation.setFirstName(user.getFirstName());
         userRepresentation.setLastName(user.getLastName());
@@ -77,15 +81,6 @@ public class KeycloakService {
         userRepresentation.setEmailVerified(true);
 
         return userRepresentation;
-    }
-
-    private void setCredentialsToUserRepresentation(String password, UserRepresentation userRepresentation) {
-        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
-        credentialRepresentation.setTemporary(false);
-        credentialRepresentation.setType(PASSWORD);
-        credentialRepresentation.setValue(password);
-
-        userRepresentation.setCredentials(List.of(credentialRepresentation));
     }
 
     private Map<String, List<String>> getAttributes(User user) {
@@ -98,35 +93,44 @@ public class KeycloakService {
         return attributes;
     }
 
+    private void setCredentialsToUserRepresentation(String password, UserRepresentation userRepresentation) {
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setTemporary(false);
+        credentialRepresentation.setType(PASSWORD);
+        credentialRepresentation.setValue(password);
+
+        userRepresentation.setCredentials(List.of(credentialRepresentation));
+    }
+
     private void addRoleToUser(Role role, String userId) {
-        RoleRepresentation roleRepresentation = clientsResource.get(clientId).roles().get(role.name()).toRepresentation();
-        usersResource.get(userId).roles().clientLevel(clientId).add(List.of(roleRepresentation));
+        usersResource.get(userId).roles().clientLevel(clientId).add(List.of(allRoles.get(role)));
+    }
+
+    public void deleteUser(UUID userId) {
+        usersResource.delete(userId.toString()).close();
     }
 
     public Optional<UserRepresentation> getUserByEmail(String email) {
         List<UserRepresentation> userRepresentations = usersResource.searchByEmail(email, true);
-        if (!userRepresentations.isEmpty()) {
-            return Optional.of(userRepresentations.getFirst());
-        } else {
+        if (userRepresentations.isEmpty()) {
             return Optional.empty();
+        } else {
+            return Optional.of(userRepresentations.getFirst());
         }
     }
 
-    public Optional<UserRepresentation> getUserById(UUID id) {
-        UserRepresentation userRepresentation;
+    public Optional<UserRepresentation> getUserById(UUID userId) {
         try {
-            userRepresentation = usersResource.get(id.toString()).toRepresentation();
+            return Optional.of(usersResource.get(userId.toString()).toRepresentation());
         } catch (NotFoundException e) {
             return Optional.empty();
         }
-        return Optional.of(userRepresentation);
     }
 
     public Role getUserRoleByUserId(UUID userId) {
-        List<RoleRepresentation> roles = usersResource.get(userId.toString()).roles().clientLevel(clientId).listAll();
-        return roles.stream()
+        return usersResource.get(userId.toString()).roles().clientLevel(clientId).listAll().stream()
                 .map(roleRepresentation -> Role.valueOf(roleRepresentation.getName()))
-                .findAny().orElseThrow();
+                .findFirst().get();
     }
 
     public List<UserRepresentation> getUsersByRole(Role role) {
