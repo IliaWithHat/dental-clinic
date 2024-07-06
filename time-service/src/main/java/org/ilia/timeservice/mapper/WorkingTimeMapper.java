@@ -4,13 +4,12 @@ import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
 import org.ilia.timeservice.controller.response.WorkingTimeDto;
 import org.ilia.timeservice.entity.WorkingTime;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+import static org.mapstruct.ReportingPolicy.IGNORE;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface WorkingTimeMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "doctorId", ignore = true)
     WorkingTime toWorkingTime(CreateWorkingTimeDto createWorkingTimeDto);
 
     WorkingTimeDto toWorkingTimeDto(WorkingTime workingTime);

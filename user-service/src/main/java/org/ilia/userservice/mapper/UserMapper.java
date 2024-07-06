@@ -14,21 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+import static org.mapstruct.ReportingPolicy.IGNORE;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface UserMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", ignore = true)
     User toUser(CreateUserDto createUserDto);
 
     @Mapping(target = "birthDate", expression = "java(getBirthDateFromMap(userRepresentation.getAttributes()))")
     @Mapping(target = "phoneNumber", expression = "java(getPhoneNumberFromMap(userRepresentation.getAttributes()))")
     @Mapping(target = "isWorking", expression = "java(getIsWorkingFromMap(userRepresentation.getAttributes()))")
-    @Mapping(target = "role", source = "role")
     UserDto toUserDto(UserRepresentation userRepresentation, Role role);
 
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "role", ignore = true)
     User toUser(UpdateUserDto updateUserDto, UUID id);
 
     default LocalDate getBirthDateFromMap(Map<String, List<String>> map) {
