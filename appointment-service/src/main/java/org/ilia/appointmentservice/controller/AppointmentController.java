@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.ilia.appointmentservice.constant.ExceptionMessages.STATE_FOR_ROLE_NOT_ALLOWED;
 import static org.ilia.appointmentservice.enums.Role.DOCTOR;
 import static org.ilia.appointmentservice.enums.Role.PATIENT;
+import static org.ilia.appointmentservice.enums.State.FREE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -57,6 +59,9 @@ public class AppointmentController {
                                                      @PathVariable UUID userId,
                                                      @ModelAttribute @Validated DateRangeDto dateRangeDto,
                                                      @RequestParam(required = false, defaultValue = "occupied") State state) {
+        if (role == PATIENT && state == FREE) {
+            throw new UnsupportedOperationException(STATE_FOR_ROLE_NOT_ALLOWED);
+        }
         return ResponseEntity.ok().body(appointmentService.find(role, userId, dateRangeDto, state));
     }
 

@@ -22,8 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -55,6 +54,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public final ResponseEntity<Object> handleUnsupportedOperationException(UnsupportedOperationException ex) {
+        HttpStatus status = UNPROCESSABLE_ENTITY;
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }

@@ -100,24 +100,16 @@ public class AppointmentService {
         verifyUserExistByRoleAndId(role, userId);
 
         if (role == PATIENT && state == OCCUPIED) {
-            List<Appointment> appointments = appointmentRepository.findByPatientIdAndDateRange(
-                    userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
-            return appointments.stream()
+            return appointmentRepository.findByPatientIdAndDateRange(
+                            userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay()).stream()
                     .map(appointmentMapper::toAppointmentDto)
                     .toList();
-        }
-        if (role == PATIENT && state == FREE) {
-            throw new RuntimeException();
-        }
-
-        if (role == DOCTOR && state == OCCUPIED) {
-            List<Appointment> appointments = appointmentRepository.findByDoctorIdAndDateRange(
-                    userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
-            return appointments.stream()
+        } else if (role == DOCTOR && state == OCCUPIED) {
+            return appointmentRepository.findByDoctorIdAndDateRange(
+                            userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay()).stream()
                     .map(appointmentMapper::toAppointmentDto)
                     .toList();
-        }
-        if (role == DOCTOR && state == FREE) {
+        } else if (role == DOCTOR && state == FREE) {
             List<WorkingTimeDto> doctorWorkingTimes = timeServiceClient.findWorkingTimesByDoctorId(role, userId);
             if (doctorWorkingTimes.isEmpty()) {
                 return Collections.emptyList();
@@ -129,39 +121,38 @@ public class AppointmentService {
             return generateFreeDates(doctorWorkingTimes, occupiedAppointments, dateRangeDto).stream()
                     .map(date -> appointmentMapper.toAppointmentDto(date, userId))
                     .toList();
+        } else {
+            throw new RuntimeException();
         }
-
-        throw new RuntimeException();
     }
 
     private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> doctorWorkingTimes, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
         List<LocalDateTime> freeDates = new ArrayList<>();
-
-        LocalDate currentDate = dateRangeDto.getFrom();
-        LocalDate endDate = dateRangeDto.getTo();
-
         Map<DayOfWeek, WorkingTimeDto> workingTimesMap = initializeWorkingTimeMap(doctorWorkingTimes);
 
-        while (currentDate.isBefore(endDate)) {
+        for (LocalDate currentDate = dateRangeDto.getFrom();
+             currentDate.isBefore(dateRangeDto.getTo());
+             currentDate = currentDate.plusDays(1)) {
             WorkingTimeDto workingTimeForDay = workingTimesMap.get(currentDate.getDayOfWeek());
             if (workingTimeForDay != null) {
-                LocalTime currentTime = workingTimeForDay.getStartTime();
+                LocalTime startTime = workingTimeForDay.getStartTime();
                 LocalTime endTime = workingTimeForDay.getEndTime();
+                LocalTime breakStartTime = workingTimeForDay.getBreakStartTime();
+                LocalTime breakEndTime = workingTimeForDay.getBreakEndTime();
                 Integer interval = workingTimeForDay.getTimeIntervalInMinutes();
 
-                while (currentTime.isBefore(endTime)) {
-                    if (!isBreak(currentTime, workingTimeForDay)) {
-                        freeDates.add(LocalDateTime.of(currentDate, currentTime));
-                    }
-                    currentTime = currentTime.plusMinutes(interval);
+                if (breakStartTime == null && breakEndTime == null) {
+                    addTimesToList(freeDates, currentDate, interval, startTime, endTime);
+                } else {
+                    addTimesToList(freeDates, currentDate, interval, startTime, breakStartTime);
+                    addTimesToList(freeDates, currentDate, interval, breakEndTime, endTime);
                 }
             }
-            currentDate = currentDate.plusDays(1);
         }
 
-        List<LocalDateTime> occupiedDates = occupiedAppointments.stream()
+        Set<LocalDateTime> occupiedDates = occupiedAppointments.stream()
                 .map(Appointment::getDate)
-                .toList();
+                .collect(Collectors.toSet());
 
         return freeDates.stream()
                 .filter(date -> !occupiedDates.contains(date))
@@ -172,15 +163,12 @@ public class AppointmentService {
         return workingTimeDtoList.stream().collect(Collectors.toMap(t -> t.getDay(), t -> t));
     }
 
-    private boolean isBreak(LocalTime currentTime, WorkingTimeDto workingTimeDto) {
-        LocalTime breakStartTime = workingTimeDto.getBreakStartTime();
-        LocalTime breakEndTime = workingTimeDto.getBreakEndTime();
-
-        if (breakStartTime == null || breakEndTime == null) {
-            return false;
+    private void addTimesToList(List<LocalDateTime> freeDates, LocalDate currentDate, Integer interval, LocalTime startTime, LocalTime endTime) {
+        for (LocalTime currentTime = startTime;
+             currentTime.isBefore(endTime);
+             currentTime = currentTime.plusMinutes(interval)) {
+            freeDates.add(LocalDateTime.of(currentDate, currentTime));
         }
-        return currentTime.isBefore(breakEndTime) &&
-               currentTime.isAfter(breakStartTime.minusMinutes(workingTimeDto.getTimeIntervalInMinutes()));
     }
 
     public void delete(Role role, UUID doctorId, UUID appointmentId) {
