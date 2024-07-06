@@ -7,15 +7,20 @@ import lombok.experimental.FieldDefaults;
 import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
 import org.ilia.timeservice.controller.response.WorkingTimeDto;
 import org.ilia.timeservice.enums.Role;
+import org.ilia.timeservice.exception.DuplicateDayException;
 import org.ilia.timeservice.service.WorkingTimeService;
 import org.ilia.timeservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.ilia.timeservice.constant.ExceptionMessages.DUPLICATE_DAY;
 import static org.ilia.timeservice.enums.Role.DOCTOR;
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -37,7 +42,17 @@ public class WorkingTimeController {
     public ResponseEntity<List<WorkingTimeDto>> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                                        @PathVariable UUID doctorId,
                                                        @RequestBody @NotEmpty List<@Valid CreateWorkingTimeDto> createWorkingTimeDtoList) {
+        validateWorkingTime(createWorkingTimeDtoList);
         return ResponseEntity.status(CREATED).body(workingTimeService.create(role, doctorId, createWorkingTimeDtoList));
+    }
+
+    private void validateWorkingTime(List<CreateWorkingTimeDto> createWorkingTimeDtoList) {
+        Set<DayOfWeek> uniqueDays = new HashSet<>();
+        for (CreateWorkingTimeDto dto : createWorkingTimeDtoList) {
+            if (!uniqueDays.add(dto.getDay())) {
+                throw new DuplicateDayException(DUPLICATE_DAY);
+            }
+        }
     }
 
     @DeleteMapping

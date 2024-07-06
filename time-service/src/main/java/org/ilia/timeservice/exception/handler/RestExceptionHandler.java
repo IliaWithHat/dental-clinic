@@ -1,5 +1,6 @@
 package org.ilia.timeservice.exception.handler;
 
+import org.ilia.timeservice.exception.DuplicateDayException;
 import org.ilia.timeservice.exception.UserNotFoundException;
 import org.ilia.timeservice.exception.WorkingTimeAlreadyExistException;
 import org.ilia.timeservice.exception.WorkingTimeNotFoundException;
@@ -21,8 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -75,6 +75,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(WorkingTimeNotFoundException.class)
     public final ResponseEntity<Object> handleWorkingTimeNotFoundException(WorkingTimeNotFoundException ex) {
         HttpStatus status = NOT_FOUND;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(DuplicateDayException.class)
+    public final ResponseEntity<Object> handleDuplicateDayException(DuplicateDayException ex) {
+        HttpStatus status = BAD_REQUEST;
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
