@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.appointmentservice.constant.ExceptionMessages.*;
@@ -117,15 +118,15 @@ public class AppointmentService {
                     .toList();
         }
         if (role == DOCTOR && state == FREE) {
-            List<WorkingTimeDto> workingTimeDtoList = timeServiceClient.findByDoctorId(role, userId);
-            if (workingTimeDtoList.isEmpty()) {
+            List<WorkingTimeDto> doctorWorkingTimes = timeServiceClient.findWorkingTimesByDoctorId(role, userId);
+            if (doctorWorkingTimes.isEmpty()) {
                 return Collections.emptyList();
             }
 
             List<Appointment> occupiedAppointments = appointmentRepository.findByDoctorIdAndDateRange(
                     userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
 
-            return generateFreeDates(workingTimeDtoList, occupiedAppointments, dateRangeDto).stream()
+            return generateFreeDates(doctorWorkingTimes, occupiedAppointments, dateRangeDto).stream()
                     .map(date -> appointmentMapper.toAppointmentDto(date, userId))
                     .toList();
         }
@@ -133,23 +134,23 @@ public class AppointmentService {
         throw new RuntimeException();
     }
 
-    private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> workingTimeDtoList, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
+    private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> doctorWorkingTimes, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {
         List<LocalDateTime> freeDates = new ArrayList<>();
 
         LocalDate currentDate = dateRangeDto.getFrom();
         LocalDate endDate = dateRangeDto.getTo();
 
-        while (currentDate.isBefore(endDate)) {
-            Optional<WorkingTimeDto> workingTimeForDay = getWorkingTimeForDay(workingTimeDtoList, currentDate.getDayOfWeek());
+        Map<DayOfWeek, WorkingTimeDto> workingTimesMap = initializeWorkingTimeMap(doctorWorkingTimes);
 
-            if (workingTimeForDay.isPresent()) {
-                WorkingTimeDto workingTimeDto = workingTimeForDay.get();
-                LocalTime currentTime = workingTimeDto.getStartTime();
-                LocalTime endTime = workingTimeDto.getEndTime();
-                Integer interval = workingTimeDto.getTimeIntervalInMinutes();
+        while (currentDate.isBefore(endDate)) {
+            WorkingTimeDto workingTimeForDay = workingTimesMap.get(currentDate.getDayOfWeek());
+            if (workingTimeForDay != null) {
+                LocalTime currentTime = workingTimeForDay.getStartTime();
+                LocalTime endTime = workingTimeForDay.getEndTime();
+                Integer interval = workingTimeForDay.getTimeIntervalInMinutes();
 
                 while (currentTime.isBefore(endTime)) {
-                    if (!isBreak(currentTime, workingTimeDto)) {
+                    if (!isBreak(currentTime, workingTimeForDay)) {
                         freeDates.add(LocalDateTime.of(currentDate, currentTime));
                     }
                     currentTime = currentTime.plusMinutes(interval);
@@ -167,6 +168,10 @@ public class AppointmentService {
                 .toList();
     }
 
+    private Map<DayOfWeek, WorkingTimeDto> initializeWorkingTimeMap(List<WorkingTimeDto> workingTimeDtoList) {
+        return workingTimeDtoList.stream().collect(Collectors.toMap(t -> t.getDay(), t -> t));
+    }
+
     private boolean isBreak(LocalTime currentTime, WorkingTimeDto workingTimeDto) {
         LocalTime breakStartTime = workingTimeDto.getBreakStartTime();
         LocalTime breakEndTime = workingTimeDto.getBreakEndTime();
@@ -176,12 +181,6 @@ public class AppointmentService {
         }
         return currentTime.isBefore(breakEndTime) &&
                currentTime.isAfter(breakStartTime.minusMinutes(workingTimeDto.getTimeIntervalInMinutes()));
-    }
-
-    private Optional<WorkingTimeDto> getWorkingTimeForDay(List<WorkingTimeDto> workingTimeDtoList, DayOfWeek dayOfWeek) {
-        return workingTimeDtoList.stream()
-                .filter(workingTimeDto -> workingTimeDto.getDay() == dayOfWeek)
-                .findFirst();
     }
 
     public void delete(Role role, UUID doctorId, UUID appointmentId) {

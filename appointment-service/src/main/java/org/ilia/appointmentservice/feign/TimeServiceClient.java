@@ -14,5 +14,5 @@ import java.util.UUID;
 public interface TimeServiceClient {
 
     @GetMapping("/v1/{role}/{doctorId}/working-time")
-    List<WorkingTimeDto> findByDoctorId(@PathVariable Role role, @PathVariable UUID doctorId);
+    List<WorkingTimeDto> findWorkingTimesByDoctorId(@PathVariable Role role, @PathVariable UUID doctorId);
 }
