@@ -1,9 +1,9 @@
-package org.ilia.userservice.exception.handler;
+package org.ilia.appointmentservice.exception.handler;
 
-import org.ilia.userservice.exception.InvalidIsWorkingFieldException;
-import org.ilia.userservice.exception.UserAlreadyExistException;
-import org.ilia.userservice.exception.UserNotFoundException;
-import org.ilia.userservice.exception.UserNotHavePermissionException;
+import org.ilia.appointmentservice.exception.AppointmentAlreadyExistException;
+import org.ilia.appointmentservice.exception.AppointmentNotFoundException;
+import org.ilia.appointmentservice.exception.DoctorNotWorkingException;
+import org.ilia.appointmentservice.exception.UserNotFoundException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,10 +20,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -59,13 +59,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(status).body(exceptionResponse);
     }
 
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
     @ExceptionHandler(UserNotFoundException.class)
     public final ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
         HttpStatus status = NOT_FOUND;
@@ -73,16 +66,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(status).body(exceptionResponse);
     }
 
-    @ExceptionHandler(UserNotHavePermissionException.class)
-    public final ResponseEntity<Object> handleUserNotHavePermissionException(UserNotHavePermissionException ex) {
-        HttpStatus status = FORBIDDEN;
+    @ExceptionHandler(DoctorNotWorkingException.class)
+    public final ResponseEntity<Object> handleDoctorNotWorkingException(DoctorNotWorkingException ex) {
+        HttpStatus status = CONFLICT;
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
 
-    @ExceptionHandler(InvalidIsWorkingFieldException.class)
-    public final ResponseEntity<Object> handleInvalidIsWorkingFieldException(InvalidIsWorkingFieldException ex) {
-        Map<String, String> error = Map.of("isWorking", ex.getMessage());
-        return ResponseEntity.status(BAD_REQUEST).body(error);
+    @ExceptionHandler(AppointmentAlreadyExistException.class)
+    public final ResponseEntity<Object> handleAppointmentAlreadyExistException(AppointmentAlreadyExistException ex) {
+        HttpStatus status = CONFLICT;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public final ResponseEntity<Object> handleAppointmentNotFoundException(AppointmentNotFoundException ex) {
+        HttpStatus status = NOT_FOUND;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
     }
 }

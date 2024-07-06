@@ -2,7 +2,6 @@ package org.ilia.timeservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.ilia.timeservice.constant.ExceptionMessages;
 import org.ilia.timeservice.controller.request.CreateWorkingTimeDto;
 import org.ilia.timeservice.controller.response.WorkingTimeDto;
 import org.ilia.timeservice.enums.Role;
@@ -20,8 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.ilia.timeservice.constant.ExceptionMessages.USER_NOT_FOUND_BY_ID_AND_ROLE;
-import static org.ilia.timeservice.constant.ExceptionMessages.WORKING_TIME_ALREADY_EXIST;
+import static org.ilia.timeservice.constant.ExceptionMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class WorkingTimeService {
     UserServiceClient userServiceClient;
 
     public List<WorkingTimeDto> findByDoctorId(Role role, UUID doctorId) {
-        verifyUserExistByIdAndRole(doctorId, role);
+        verifyUserExistByRoleAndId(role, doctorId);
 
         return workingTimeRepository.findByDoctorId(doctorId).stream()
                 .map(workingTimeMapper::toWorkingTimeDto)
@@ -42,10 +40,8 @@ public class WorkingTimeService {
     }
 
     public List<WorkingTimeDto> create(Role role, UUID doctorId, List<CreateWorkingTimeDto> createWorkingTimeDtoList) {
-        verifyUserExistByIdAndRole(doctorId, role);
-        if (!workingTimeRepository.findByDoctorId(doctorId).isEmpty()) {
-            throw new WorkingTimeAlreadyExistException(WORKING_TIME_ALREADY_EXIST + doctorId);
-        }
+        verifyUserExistByRoleAndId(role, doctorId);
+        verifyWorkingTimeNotExistById(doctorId);
 
         return createWorkingTimeDtoList.stream()
                 .map(workingTimeMapper::toWorkingTime)
@@ -56,18 +52,28 @@ public class WorkingTimeService {
     }
 
     public void deleteByDoctorId(Role role, UUID doctorId) {
-        verifyUserExistByIdAndRole(doctorId, role);
-        if (workingTimeRepository.findByDoctorId(doctorId).isEmpty()) {
-            throw new WorkingTimeNotFoundException(ExceptionMessages.WORKING_TIME_NOT_FOUND + doctorId);
-        }
+        verifyUserExistByRoleAndId(role, doctorId);
+        verifyWorkingTimeExistById(doctorId);
 
         workingTimeRepository.deleteByDoctorId(doctorId);
     }
 
-    private void verifyUserExistByIdAndRole(UUID id, Role role) {
+    private void verifyUserExistByRoleAndId(Role role, UUID id) {
         UserDto user = userServiceClient.findById(role, id);
-        if (user == null || user.getRole() != role) {
+        if (user.getRole() != role) {
             throw new UserNotFoundException(String.format(USER_NOT_FOUND_BY_ID_AND_ROLE, id, role));
+        }
+    }
+
+    private void verifyWorkingTimeNotExistById(UUID doctorId) {
+        if (!workingTimeRepository.findByDoctorId(doctorId).isEmpty()) {
+            throw new WorkingTimeAlreadyExistException(WORKING_TIME_ALREADY_EXIST + doctorId);
+        }
+    }
+
+    private void verifyWorkingTimeExistById(UUID doctorId) {
+        if (workingTimeRepository.findByDoctorId(doctorId).isEmpty()) {
+            throw new WorkingTimeNotFoundException(WORKING_TIME_NOT_FOUND + doctorId);
         }
     }
 }

@@ -11,6 +11,7 @@ import org.ilia.appointmentservice.enums.State;
 import org.ilia.appointmentservice.service.AppointmentService;
 import org.ilia.appointmentservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<AppointmentDto> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                                  @PathVariable UUID userId,
-                                                 @RequestBody CreateAppointmentDto createAppointmentDto) {
+                                                 @RequestBody @Validated CreateAppointmentDto createAppointmentDto) {
         return ResponseEntity.status(CREATED).body(appointmentService.create(role, userId, createAppointmentDto));
     }
 
@@ -40,7 +41,7 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDto> update(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                                  @PathVariable UUID userId,
                                                  @PathVariable UUID appointmentId,
-                                                 @RequestBody UpdateAppointmentDto updateAppointmentDto) {
+                                                 @RequestBody @Validated UpdateAppointmentDto updateAppointmentDto) {
         return ResponseEntity.ok().body(appointmentService.update(role, userId, appointmentId, updateAppointmentDto));
     }
 
@@ -54,7 +55,7 @@ public class AppointmentController {
     @GetMapping
     public ResponseEntity<List<AppointmentDto>> find(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
                                                      @PathVariable UUID userId,
-                                                     @ModelAttribute DateRangeDto dateRangeDto,
+                                                     @ModelAttribute @Validated DateRangeDto dateRangeDto,
                                                      @RequestParam(required = false, defaultValue = "occupied") State state) {
         return ResponseEntity.ok().body(appointmentService.find(role, userId, dateRangeDto, state));
     }
@@ -63,7 +64,7 @@ public class AppointmentController {
     public ResponseEntity<?> delete(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                     @PathVariable UUID userId,
                                     @PathVariable UUID appointmentId) {
-        appointmentService.delete(appointmentId, role, userId);
+        appointmentService.delete(role, userId, appointmentId);
         return ResponseEntity.ok().build();
     }
 }
