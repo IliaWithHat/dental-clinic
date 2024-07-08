@@ -1,129 +1,43 @@
 User Service
 ------------------------------------------------------------------------------------------------------------------------
-User {
-    Int id,
-    String email,
-    String firstName,
-    String lastName,
-    LocalDate birthDate,
-    String phone,
-    String password,
-    Bool isWorking,
-    Enum role
-}
-Token {
-    String accessToken
-}
-
-POST /{role}/login
-Token login(User) -> аутентификация пользователя
-
-POST /{role}
-User createUser(User) -> создать пользователя с разными ролями
-
-PUT /{role}/{id}
-User updateUser(User) -> обновить пользователя
-
-DELETE /{role}/{id}
-void deleteUser(Int id) -> удалить пользователя
-
-GET /{role}/{id}
-List<User> findById(Int id) -> найти пользователя
-
-GET /{role}
-List<User> findByRole(Role) -> найти пользователей по роли
+GET    /{role}          -> найти пользователей по роли
+GET    /{role}/{userId} -> найти пользователя
+POST   /{role}          -> создать пользователя с разными ролями
+POST   /{role}/login    -> аутентификация пользователя
+PUT    /{role}/{userId} -> обновить пользователя
+DELETE /{role}/{userId} -> удалить пользователя
 ------------------------------------------------------------------------------------------------------------------------
 
 
 Time Service
 ------------------------------------------------------------------------------------------------------------------------
-WorkingTime {
-    String day,
-    LocalTime startHour,
-    LocalTime endHour,
-    Int timeIntervalInMinutes,
-    Int doctorId
-}
-
-POST /{role}/{doctorId}/working-time
-void createWorkingTime(List<WorkingTime>) -> установить рабочее время врача
-
-DELETE /{role}/{doctorId}/working-time
-void deleteWorkingTime(Int doctorId) -> удалить рабочее время врача
-
-GET /{role}/{doctorId}/working-time
-List<WorkingTime> findByDoctorId(Int doctorId) -> найти рабочее время врача
+GET    /{role}/{doctorId}/working-time -> найти рабочее время врача
+POST   /{role}/{doctorId}/working-time -> установить рабочее время врача
+DELETE /{role}/{doctorId}/working-time -> удалить рабочее время врача
 ------------------------------------------------------------------------------------------------------------------------
 
 
 Appointment Service
 ------------------------------------------------------------------------------------------------------------------------
-Appointment {
-    Int id,
-    LocalDateTime date,
-    boolean isPatientCome,
-    String serviceInfo,
-    BigDecimal price,
-    Int patientId,
-    Int doctorId
-}
-DateRange {
-    LocalDate from,
-    LocalDate to
-}
-
-POST /{role}/{doctorId}/appointment
-Appointment createAppointment(Appointment) -> создать запись к врачу
-
-PUT /{role}/{doctorId}/appointment/{id}
-Appointment updateAppointment(Appointment) -> обновить запись
-
-DELETE /{role}/{patientId}/appointment/{id}
-void deleteAppointment(Int appointmentId) -> удалить запись
-
-GET /{role}/{patientId}/appointment
-List<Appointment> findAllOccupiedAppointmentsByPatientId(Int patientId) -> найти все занятые записи пациента к врачу
-
-GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=occupied
-List<Appointment> findAllOccupiedAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все занятые записи
-к врачу по заданному диапазону
-
-GET /{role}/{doctorId}/appointment?from={date}&to={date}&state=free
-List<Appointment> findAllFreeAppointmentsByDateRangeAndDoctorId(DateRange, Int doctorId) -> найти все доступные записи
-к врачу по заданному диапазону
-
-{role} can be patient or doctor
+GET    /{role}/{userId}/appointment?from={date}&to={date}&state={state} -> найти записи по {date} и {state} к {role}
+POST   /{role}/{doctorId}/appointment                                   -> создать запись к врачу
+PUT    /{role}/{doctorId}/appointment/{id}                              -> обновить запись
+DELETE /{role}/{doctorId}/appointment/{id}                              -> удалить запись
 ------------------------------------------------------------------------------------------------------------------------
 
 
 Review Service
 ------------------------------------------------------------------------------------------------------------------------
-Review {
-    Int id,
-    String review,
-    LocalDateTime date,
-    Int appointmentId,
-    Int patientId,
-    Int doctorId
-}
-
-POST /{role}/{userId}/review
-Review createReview(Review) -> создать отзыв на врача
-
-PUT /{role}/{userId}/review/{reviewId}
-Review createReview(Review) -> обновить отзыв
-
-DELETE /{role}/{userId}/review/{reviewId}
-void createReview(Int reviewId) -> удалить отзыв
-
-GET /{role}/{userId}/review
-List<Review> findReviews() -> найти отзывы для врача
+GET    /{role}/{doctorId}/review            -> найти отзывы для врача
+POST   /{role}/{doctorId}/review            -> создать отзыв на врача
+PUT    /{role}/{doctorId}/review/{reviewId} -> обновить отзыв
+DELETE /{role}/{doctorId}/review/{reviewId} -> удалить отзыв
 ------------------------------------------------------------------------------------------------------------------------
 
 
 Email Service
 ------------------------------------------------------------------------------------------------------------------------
-void sendAppointmentConfirmationEmailToPatient(Appointment) -> отправить письмо с подтверждением записи к врачу
-void sendNotificationEmailToPatient() -> отправить письмо с напоминанием о записи за день пациенту
-void sendReportEmailToOwner() -> отправить письмо с отчётом владельцу
+sendAppointmentConfirmationEmail() -> отправить письмо с подтверждением записи к врачу
+sendAppointmentReminderEmail()     -> отправить письмо с напоминанием о записи за день пациенту
+sendReportEmail()                  -> отправить письмо с отчётом владельцу
 ------------------------------------------------------------------------------------------------------------------------

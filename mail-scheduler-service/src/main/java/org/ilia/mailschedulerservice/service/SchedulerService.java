@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.ilia.mailschedulerservice.entity.DateRange;
 import org.ilia.mailschedulerservice.entity.MailDetails;
+import org.ilia.mailschedulerservice.enums.Subject;
 import org.ilia.mailschedulerservice.feign.AppointmentServiceClient;
 import org.ilia.mailschedulerservice.feign.UserServiceClient;
 import org.ilia.mailschedulerservice.feign.response.AppointmentDto;
@@ -42,7 +43,8 @@ public class SchedulerService {
 
             for (AppointmentDto appointment : appointmentForThisDoctor) {
                 UserDto patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
-                sendEmailToPatientWithAppointmentReminder(doctor, patient, appointment);
+                MailDetails mailDetails = buildMailDetails(doctor, patient, appointment, APPOINTMENT_REMINDER);
+                kafkaProducer.send(mailDetails);
             }
         }
     }
@@ -52,9 +54,9 @@ public class SchedulerService {
         return new DateRange(today, today.plusDays(1));
     }
 
-    private void sendEmailToPatientWithAppointmentReminder(UserDto doctor, UserDto patient, AppointmentDto appointment) {
-        MailDetails mailDetails = MailDetails.builder()
-                .subject(APPOINTMENT_REMINDER)
+    private MailDetails buildMailDetails(UserDto doctor, UserDto patient, AppointmentDto appointment, Subject subject) {
+        return MailDetails.builder()
+                .subject(subject)
                 .patientEmail(patient.getEmail())
                 .patientFirstName(patient.getFirstName())
                 .patientLastName(patient.getLastName())
@@ -62,7 +64,5 @@ public class SchedulerService {
                 .doctorLastName(doctor.getLastName())
                 .appointmentDate(appointment.getDate())
                 .build();
-
-        kafkaProducer.send(mailDetails);
     }
 }

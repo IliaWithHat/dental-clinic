@@ -10,6 +10,7 @@ import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.entity.MailDetails;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
+import org.ilia.appointmentservice.enums.Subject;
 import org.ilia.appointmentservice.exception.*;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
 import org.ilia.appointmentservice.feign.UserServiceClient;
@@ -59,16 +60,21 @@ public class AppointmentService {
 
         Appointment convertedAppointment = appointmentMapper.toAppointment(appointmentToSave, getCurrentUserId(), doctorId);
         Appointment savedAppointment = appointmentRepository.save(convertedAppointment);
-        sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
+
+        UserDto patient = userServiceClient.findById(PATIENT, savedAppointment.getPatientId());
+        sendAppointmentConfirmationEmail(doctor, patient, savedAppointment);
+
         return appointmentMapper.toAppointmentDto(savedAppointment);
     }
 
-    private void sendEmailToPatientWithAppointmentConfirmation(Appointment appointment) {
-        UserDto doctor = userServiceClient.findById(DOCTOR, appointment.getDoctorId());
-        UserDto patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
+    private void sendAppointmentConfirmationEmail(UserDto doctor, UserDto patient, Appointment appointment) {
+        MailDetails mailDetails = buildMailDetails(doctor, patient, appointment, APPOINTMENT_CONFIRMATION);
+        kafkaProducer.send(mailDetails);
+    }
 
-        MailDetails mailDetails = MailDetails.builder()
-                .subject(APPOINTMENT_CONFIRMATION)
+    private MailDetails buildMailDetails(UserDto doctor, UserDto patient, Appointment appointment, Subject subject) {
+        return MailDetails.builder()
+                .subject(subject)
                 .patientEmail(patient.getEmail())
                 .patientFirstName(patient.getFirstName())
                 .patientLastName(patient.getLastName())
@@ -76,8 +82,6 @@ public class AppointmentService {
                 .doctorLastName(doctor.getLastName())
                 .appointmentDate(appointment.getDate())
                 .build();
-
-        kafkaProducer.send(mailDetails);
     }
 
     public AppointmentDto update(Role role, UUID doctorId, UUID appointmentId, UpdateAppointmentDto appointmentToUpdate) {
@@ -168,7 +172,7 @@ public class AppointmentService {
     }
 
     private Map<DayOfWeek, WorkingTimeDto> initializeWorkingTimeMap(List<WorkingTimeDto> workingTimeDtoList) {
-        return workingTimeDtoList.stream().collect(Collectors.toMap(t -> t.getDay(), t -> t));
+        return workingTimeDtoList.stream().collect(Collectors.toMap(WorkingTimeDto::getDay, t -> t));
     }
 
     private void addTimesToList(List<LocalDateTime> freeDates, LocalDate currentDate, Integer interval, LocalTime startTime, LocalTime endTime) {
