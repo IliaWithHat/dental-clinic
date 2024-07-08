@@ -6,4 +6,5 @@ import lombok.Value;
 public class SuccessLoginDto {
 
     String token;
+    String refreshToken;
 }

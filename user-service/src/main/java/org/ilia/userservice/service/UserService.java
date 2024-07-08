@@ -2,6 +2,7 @@ package org.ilia.userservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ilia.userservice.controller.request.CreateUserDto;
 import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.controller.request.UpdateUserDto;
@@ -54,7 +55,8 @@ public class UserService {
     public SuccessLoginDto login(Role role, LoginDto loginDto) {
         verifyUserExistByEmailAndRole(loginDto.getEmail(), role);
 
-        return new SuccessLoginDto(keycloakService.getAccessToken(loginDto));
+        Pair<String, String> accessToken = keycloakService.getAccessToken(loginDto);
+        return new SuccessLoginDto(accessToken.getLeft(), accessToken.getRight());
     }
 
     public UserDto findById(Role role, UUID userId) {

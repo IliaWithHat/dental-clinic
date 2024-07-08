@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ilia.userservice.configuration.KeycloakProperties;
 import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.entity.User;
@@ -137,7 +138,7 @@ public class KeycloakService {
         return clientsResource.get(clientId).roles().get(role.name()).getUserMembers();
     }
 
-    public String getAccessToken(LoginDto loginDto) {
+    public Pair<String, String> getAccessToken(LoginDto loginDto) {
         Keycloak tempKeycloak = Keycloak.getInstance(
                 keycloakProperties.getServerUrl(),
                 keycloakProperties.getRealm(),
@@ -147,7 +148,8 @@ public class KeycloakService {
                 keycloakProperties.getClientSecret()
         );
         String token = tempKeycloak.tokenManager().getAccessToken().getToken();
+        String refreshToken = tempKeycloak.tokenManager().getAccessToken().getRefreshToken();
         tempKeycloak.close();
-        return token;
+        return Pair.of(token, refreshToken);
     }
 }
