@@ -2,7 +2,6 @@ package org.ilia.mailschedulerservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import org.ilia.mailschedulerservice.entity.DateRange;
 import org.ilia.mailschedulerservice.entity.MailDetails;
 import org.ilia.mailschedulerservice.feign.AppointmentServiceClient;
@@ -31,19 +30,15 @@ public class SchedulerService {
     AppointmentServiceClient appointmentServiceClient;
     KafkaProducer kafkaProducer;
 
-    @NonFinal
-    DateRange dateRange;
-
     @Scheduled(cron = "${cron.send-appointment-reminder-email}")
     public void sendAppointmentReminderEmail() {
         tokenService.initializeToken();
-        updateDateRange();
+        DateRange dateRange = initializeDateRange();
 
         List<UserDto> doctors = userServiceClient.findByRole(DOCTOR);
-
         for (UserDto doctor : doctors) {
             List<AppointmentDto> appointmentForThisDoctor = appointmentServiceClient.find(
-                    dateRange.getFrom(), dateRange.getTo(), DOCTOR, doctor.getId());
+                    DOCTOR, doctor.getId(), dateRange.getFrom(), dateRange.getTo());
 
             for (AppointmentDto appointment : appointmentForThisDoctor) {
                 UserDto patient = userServiceClient.findById(PATIENT, appointment.getPatientId());
@@ -52,14 +47,9 @@ public class SchedulerService {
         }
     }
 
-    private void updateDateRange() {
+    private DateRange initializeDateRange() {
         LocalDate today = LocalDate.now();
-        if (dateRange == null || dateRange.getFrom().isBefore(today)) {
-            dateRange = DateRange.builder()
-                    .from(today)
-                    .to(today.plusDays(1))
-                    .build();
-        }
+        return new DateRange(today, today.plusDays(1));
     }
 
     private void sendEmailToPatientWithAppointmentReminder(UserDto doctor, UserDto patient, AppointmentDto appointment) {

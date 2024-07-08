@@ -18,7 +18,7 @@ import java.util.UUID;
 public interface UserServiceClient {
 
     @PostMapping("/v1/{role}/login")
-    SuccessLoginDto login(@RequestBody LoginDto loginDto, @PathVariable Role role);
+    SuccessLoginDto login(@PathVariable Role role, @RequestBody LoginDto loginDto);
 
     @GetMapping("/v1/{role}/{id}")
     UserDto findById(@PathVariable Role role, @PathVariable UUID id);
