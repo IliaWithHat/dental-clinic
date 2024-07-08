@@ -18,7 +18,6 @@ import org.ilia.appointmentservice.feign.response.WorkingTimeDto;
 import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
@@ -189,9 +188,6 @@ public class AppointmentService {
 
     private UUID getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            return null;
-        }
         return UUID.fromString(((DefaultOAuth2AuthenticatedPrincipal) authentication.getPrincipal()).getName());
     }
 
