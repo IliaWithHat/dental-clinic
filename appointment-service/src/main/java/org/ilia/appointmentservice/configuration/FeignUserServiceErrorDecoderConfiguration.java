@@ -1,7 +1,7 @@
 package org.ilia.appointmentservice.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ilia.appointmentservice.exception.errordecoder.UserServiceErrorDecoder;
+import org.ilia.appointmentservice.feign.errordecoder.UserServiceErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

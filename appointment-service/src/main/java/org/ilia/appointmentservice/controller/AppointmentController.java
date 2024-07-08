@@ -8,9 +8,11 @@ import org.ilia.appointmentservice.controller.request.UpdateAppointmentDto;
 import org.ilia.appointmentservice.controller.response.AppointmentDto;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
+import org.ilia.appointmentservice.exception.InvalidDateRangeException;
 import org.ilia.appointmentservice.service.AppointmentService;
 import org.ilia.appointmentservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,9 +60,13 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentDto>> find(@PathVariable @RightRole(allowedRoles = {DOCTOR, PATIENT}) Role role,
                                                      @PathVariable UUID userId,
                                                      @ModelAttribute @Validated DateRangeDto dateRangeDto,
+                                                     BindingResult dateRangeDtoBindingResult,
                                                      @RequestParam(required = false, defaultValue = "occupied") State state) {
         if (role == PATIENT && state == FREE) {
             throw new UnsupportedOperationException(STATE_FOR_ROLE_NOT_ALLOWED);
+        }
+        if (role == DOCTOR && dateRangeDtoBindingResult.hasErrors()) {
+            throw new InvalidDateRangeException(dateRangeDtoBindingResult);
         }
         return ResponseEntity.ok().body(appointmentService.find(role, userId, dateRangeDto, state));
     }

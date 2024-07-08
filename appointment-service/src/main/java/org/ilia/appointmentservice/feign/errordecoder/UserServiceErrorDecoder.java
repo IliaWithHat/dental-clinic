@@ -1,4 +1,4 @@
-package org.ilia.appointmentservice.exception.errordecoder;
+package org.ilia.appointmentservice.feign.errordecoder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;

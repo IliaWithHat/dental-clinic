@@ -17,6 +17,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     Optional<Appointment> findByIdAndDoctorId(UUID id, UUID doctorId);
 
+    List<Appointment> findByPatientId(UUID patientId);
+
     @Query("from Appointment a where a.patientId = :patientId and a.date between :from and :to")
     List<Appointment> findByPatientIdAndDateRange(UUID patientId, LocalDateTime from, LocalDateTime to);
 

@@ -100,8 +100,14 @@ public class AppointmentService {
         verifyUserExistByRoleAndId(role, userId);
 
         if (role == PATIENT && state == OCCUPIED) {
-            return appointmentRepository.findByPatientIdAndDateRange(
-                            userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay()).stream()
+            List<Appointment> appointments;
+            if (dateRangeDto.equals(new DateRangeDto(null, null))) {
+                appointments = appointmentRepository.findByPatientId(userId);
+            } else {
+                appointments = appointmentRepository.findByPatientIdAndDateRange(
+                        userId, dateRangeDto.getFrom().atStartOfDay(), dateRangeDto.getTo().atStartOfDay());
+            }
+            return appointments.stream()
                     .map(appointmentMapper::toAppointmentDto)
                     .toList();
         } else if (role == DOCTOR && state == OCCUPIED) {

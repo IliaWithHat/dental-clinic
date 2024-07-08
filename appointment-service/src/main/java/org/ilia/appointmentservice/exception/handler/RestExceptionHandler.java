@@ -1,9 +1,6 @@
 package org.ilia.appointmentservice.exception.handler;
 
-import org.ilia.appointmentservice.exception.AppointmentAlreadyExistException;
-import org.ilia.appointmentservice.exception.AppointmentNotFoundException;
-import org.ilia.appointmentservice.exception.DoctorNotWorkingException;
-import org.ilia.appointmentservice.exception.UserNotFoundException;
+import org.ilia.appointmentservice.exception.*;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -56,6 +53,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<Object> handleInvalidDateRangeException(InvalidDateRangeException ex) {
+        HttpStatus status = BAD_REQUEST;
+        Set<ExceptionResponse> errors = new HashSet<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            errors.add(new ExceptionResponse(error.getDefaultMessage(), status));
+        });
+        return ResponseEntity.status(status).body(errors);
     }
 
     @ExceptionHandler(UnsupportedOperationException.class)
