@@ -1,6 +1,6 @@
 package org.ilia.mailschedulerservice.service;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.ilia.mailschedulerservice.feign.UserServiceClient;
@@ -12,7 +12,6 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.mailschedulerservice.enums.Role.OWNER;
 
 @Service
-@Data
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class TokenService {
 
@@ -20,6 +19,7 @@ public class TokenService {
     String email;
     String password;
 
+    @Getter
     @NonFinal
     String token;
 

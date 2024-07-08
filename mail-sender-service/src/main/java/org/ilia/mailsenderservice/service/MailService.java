@@ -2,9 +2,7 @@ package org.ilia.mailsenderservice.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.ilia.mailsenderservice.entity.MailDetails;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,16 +18,19 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class MailService {
 
     JavaMailSender mailSender;
     TemplateEngine templateEngine;
-
-    @Value("${EMAIL_ADDRESS}")
-    @NonFinal
     String senderEmailAddress;
+
+    public MailService(JavaMailSender mailSender, TemplateEngine templateEngine,
+                       @Value("${EMAIL_ADDRESS}") String senderEmailAddress) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+        this.senderEmailAddress = senderEmailAddress;
+    }
 
     public void sendEmailToUser(MailDetails mailDetails) {
         sendEmail(mailDetails.getPatientEmail(), mailDetails.getSubject().getEmailSubject(), generateContent(mailDetails));
