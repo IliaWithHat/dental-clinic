@@ -99,4 +99,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
+
+    @ExceptionHandler(InvalidAppointmentDateException.class)
+    public final ResponseEntity<Object> handleInvalidAppointmentDateException(InvalidAppointmentDateException ex) {
+        HttpStatus status = BAD_REQUEST;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
 }

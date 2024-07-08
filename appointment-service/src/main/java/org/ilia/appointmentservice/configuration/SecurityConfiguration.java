@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.ilia.appointmentservice.enums.Role.ADMIN;
-import static org.ilia.appointmentservice.enums.Role.PATIENT;
+import static org.ilia.appointmentservice.enums.Role.*;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -41,10 +40,11 @@ public class SecurityConfiguration {
 
                         .requestMatchers(POST,
                                 "/v1/{role}/{userId}/appointment").hasAnyRole(PATIENT.name(), ADMIN.name())
-                        .requestMatchers(PUT,
-                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
                         .requestMatchers(DELETE,
                                 "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
+
+                        .requestMatchers(PUT,
+                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(DOCTOR.name(), ADMIN.name())
 
                         .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2

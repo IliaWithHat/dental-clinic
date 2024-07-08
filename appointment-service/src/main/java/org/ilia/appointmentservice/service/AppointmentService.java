@@ -10,10 +10,7 @@ import org.ilia.appointmentservice.entity.Appointment;
 import org.ilia.appointmentservice.entity.MailDetails;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
-import org.ilia.appointmentservice.exception.AppointmentAlreadyExistException;
-import org.ilia.appointmentservice.exception.AppointmentNotFoundException;
-import org.ilia.appointmentservice.exception.DoctorNotWorkingException;
-import org.ilia.appointmentservice.exception.UserNotFoundException;
+import org.ilia.appointmentservice.exception.*;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
 import org.ilia.appointmentservice.feign.UserServiceClient;
 import org.ilia.appointmentservice.feign.response.UserDto;
@@ -54,7 +51,8 @@ public class AppointmentService {
     public AppointmentDto create(Role role, UUID doctorId, CreateAppointmentDto appointmentToSave) {
         UserDto doctor = verifyUserExistByRoleAndId(role, doctorId);
         verifyDoctorIsWorking(doctor);
-        verifyAppointmentNotExistByIdAndDate(doctorId, appointmentToSave.getDate());
+        verifyAppointmentNotExistByIdAndDate(appointmentToSave);
+        verifyAppointmentIsFree(appointmentToSave);
 
         Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(appointmentToSave));
         sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
@@ -204,9 +202,20 @@ public class AppointmentService {
         }
     }
 
-    private void verifyAppointmentNotExistByIdAndDate(UUID doctorId, LocalDateTime date) {
-        if (appointmentRepository.findByDoctorIdAndDate(doctorId, date).isPresent()) {
+    private void verifyAppointmentNotExistByIdAndDate(CreateAppointmentDto dto) {
+        if (appointmentRepository.findByDoctorIdAndDate(dto.getDoctorId(), dto.getDate()).isPresent()) {
             throw new AppointmentAlreadyExistException(APPOINTMENT_ALREADY_EXIST);
+        }
+    }
+
+    private void verifyAppointmentIsFree(CreateAppointmentDto dto) {
+        LocalDate date = dto.getDate().toLocalDate();
+        DateRangeDto dateRangeDto = new DateRangeDto(date, date.plusDays(1));
+        List<LocalDateTime> freeDates = find(DOCTOR, dto.getDoctorId(), dateRangeDto, FREE).stream()
+                .map(AppointmentDto::getDate)
+                .toList();
+        if (!freeDates.contains(dto.getDate())) {
+            throw new InvalidAppointmentDateException(INVALID_APPOINTMENT_DATE);
         }
     }
 }

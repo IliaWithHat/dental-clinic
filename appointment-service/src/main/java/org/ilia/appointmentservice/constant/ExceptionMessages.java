@@ -10,4 +10,5 @@ public class ExceptionMessages {
     public static final String APPOINTMENT_ALREADY_EXIST = "Appointment for this date already exist";
     public static final String APPOINTMENT_NOT_FOUND = "Appointment not found by id: ";
     public static final String STATE_FOR_ROLE_NOT_ALLOWED = "This state is not allowed for this role";
+    public static final String INVALID_APPOINTMENT_DATE = "Invalid appointment date";
 }
