@@ -18,6 +18,10 @@ import org.ilia.appointmentservice.feign.response.WorkingTimeDto;
 import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,10 +55,11 @@ public class AppointmentService {
     public AppointmentDto create(Role role, UUID doctorId, CreateAppointmentDto appointmentToSave) {
         UserDto doctor = verifyUserExistByRoleAndId(role, doctorId);
         verifyDoctorIsWorking(doctor);
-        verifyAppointmentNotExistByIdAndDate(appointmentToSave);
-        verifyAppointmentIsFree(appointmentToSave);
+        verifyAppointmentNotExistByIdAndDate(doctorId, appointmentToSave.getDate());
+        verifyAppointmentIsFree(doctorId, appointmentToSave.getDate());
 
-        Appointment savedAppointment = appointmentRepository.save(appointmentMapper.toAppointment(appointmentToSave));
+        Appointment convertedAppointment = appointmentMapper.toAppointment(appointmentToSave, getCurrentUserId(), doctorId);
+        Appointment savedAppointment = appointmentRepository.save(convertedAppointment);
         sendEmailToPatientWithAppointmentConfirmation(savedAppointment);
         return appointmentMapper.toAppointmentDto(savedAppointment);
     }
@@ -182,6 +187,14 @@ public class AppointmentService {
         appointmentRepository.deleteById(appointmentId);
     }
 
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return UUID.fromString(((DefaultOAuth2AuthenticatedPrincipal) authentication.getPrincipal()).getName());
+    }
+
     private UserDto verifyUserExistByRoleAndId(Role role, UUID id) {
         UserDto user = userServiceClient.findById(role, id);
         if (user.getRole() != role) {
@@ -202,19 +215,19 @@ public class AppointmentService {
         }
     }
 
-    private void verifyAppointmentNotExistByIdAndDate(CreateAppointmentDto dto) {
-        if (appointmentRepository.findByDoctorIdAndDate(dto.getDoctorId(), dto.getDate()).isPresent()) {
+    private void verifyAppointmentNotExistByIdAndDate(UUID doctorId, LocalDateTime appointmentDate) {
+        if (appointmentRepository.findByDoctorIdAndDate(doctorId, appointmentDate).isPresent()) {
             throw new AppointmentAlreadyExistException(APPOINTMENT_ALREADY_EXIST);
         }
     }
 
-    private void verifyAppointmentIsFree(CreateAppointmentDto dto) {
-        LocalDate date = dto.getDate().toLocalDate();
+    private void verifyAppointmentIsFree(UUID doctorId, LocalDateTime appointmentDate) {
+        LocalDate date = appointmentDate.toLocalDate();
         DateRangeDto dateRangeDto = new DateRangeDto(date, date.plusDays(1));
-        List<LocalDateTime> freeDates = find(DOCTOR, dto.getDoctorId(), dateRangeDto, FREE).stream()
+        List<LocalDateTime> freeDates = find(DOCTOR, doctorId, dateRangeDto, FREE).stream()
                 .map(AppointmentDto::getDate)
                 .toList();
-        if (!freeDates.contains(dto.getDate())) {
+        if (!freeDates.contains(appointmentDate)) {
             throw new InvalidAppointmentDateException(INVALID_APPOINTMENT_DATE);
         }
     }

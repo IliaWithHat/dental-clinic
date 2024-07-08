@@ -15,7 +15,7 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface AppointmentMapper {
 
-    Appointment toAppointment(CreateAppointmentDto createAppointmentDto);
+    Appointment toAppointment(CreateAppointmentDto createAppointmentDto, UUID patientId, UUID doctorId);
 
     Appointment updateAppointment(UpdateAppointmentDto updateAppointmentDto, @MappingTarget Appointment appointment);
 
