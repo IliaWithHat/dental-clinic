@@ -19,6 +19,7 @@ DELETE /{role}/{doctorId}/working-time -> удалить рабочее врем
 
 Appointment Service
 ------------------------------------------------------------------------------------------------------------------------
+GET    /{role}/{doctorId}/appointment/{id}                              -> найти запись к врачу
 GET    /{role}/{userId}/appointment?from={date}&to={date}&state={state} -> найти записи по {date} и {state} к {role}
 POST   /{role}/{doctorId}/appointment                                   -> создать запись к врачу
 PUT    /{role}/{doctorId}/appointment/{id}                              -> обновить запись
