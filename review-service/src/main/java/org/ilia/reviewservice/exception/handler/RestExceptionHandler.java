@@ -1,5 +1,6 @@
 package org.ilia.reviewservice.exception.handler;
 
+import org.ilia.reviewservice.exception.PatientNotWasOnAppointmentException;
 import org.ilia.reviewservice.exception.ReviewNotFoundException;
 import org.ilia.reviewservice.exception.UserNotFoundException;
 import org.springframework.beans.TypeMismatchException;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
@@ -66,6 +68,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ReviewNotFoundException.class)
     public final ResponseEntity<Object> handleReviewNotFoundException(ReviewNotFoundException ex) {
         HttpStatus status = NOT_FOUND;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(PatientNotWasOnAppointmentException.class)
+    public final ResponseEntity<Object> handlePatientNotWasOnAppointmentException(PatientNotWasOnAppointmentException ex) {
+        HttpStatus status = BAD_REQUEST;
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }

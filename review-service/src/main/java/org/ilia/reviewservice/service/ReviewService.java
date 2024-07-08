@@ -6,6 +6,7 @@ import org.ilia.reviewservice.controller.request.CreateUpdateReviewDto;
 import org.ilia.reviewservice.controller.response.ReviewDto;
 import org.ilia.reviewservice.entity.Review;
 import org.ilia.reviewservice.enums.Role;
+import org.ilia.reviewservice.exception.PatientNotWasOnAppointmentException;
 import org.ilia.reviewservice.exception.ReviewNotFoundException;
 import org.ilia.reviewservice.exception.UserNotFoundException;
 import org.ilia.reviewservice.feign.AppointmentServiceClient;
@@ -23,8 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.ilia.reviewservice.constant.ExceptionMessages.REVIEW_NOT_FOUND;
-import static org.ilia.reviewservice.constant.ExceptionMessages.USER_NOT_FOUND_BY_ID_AND_ROLE;
+import static org.ilia.reviewservice.constant.ExceptionMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -47,29 +47,31 @@ public class ReviewService {
 
     public ReviewDto create(Role role, UUID doctorId, CreateUpdateReviewDto createUpdateReviewDto) {
         verifyUserExistByRoleAndId(role, doctorId);
-
-        boolean patientWasOnAppointment = appointmentServiceClient.find(Role.PATIENT, getCurrentUserId()).stream()
-                .anyMatch(appointment -> appointment.getIsPatientCome() != null && appointment.getIsPatientCome());
-        if (!patientWasOnAppointment) {
-            throw new RuntimeException();
-        }
+        verifyPatientWasOnAppointment();
 
         Review reviewToSave = reviewMapper.toReview(createUpdateReviewDto);
         reviewToSave.setPatientId(getCurrentUserId());
         reviewToSave.setDoctorId(doctorId);
+
         return reviewMapper.toReviewDto(reviewRepository.save(reviewToSave));
+    }
+
+    private void verifyPatientWasOnAppointment() {
+        boolean patientWasOnAppointment = appointmentServiceClient.find(Role.PATIENT, getCurrentUserId()).stream()
+                .anyMatch(appointment -> appointment.getIsPatientCome() != null && appointment.getIsPatientCome());
+        if (!patientWasOnAppointment) {
+            throw new PatientNotWasOnAppointmentException(PATIENT_NOT_WAS_ON_APPOINTMENT);
+        }
     }
 
     public ReviewDto update(Role role, UUID doctorId, UUID reviewId, CreateUpdateReviewDto createUpdateReviewDto) {
         verifyUserExistByRoleAndId(role, doctorId);
 
-        return reviewRepository.findById(reviewId)
-                .filter(review -> review.getDoctorId().equals(doctorId))
-                .filter(review -> review.getPatientId().equals(getCurrentUserId()))
+        return reviewRepository.findByIdAndPatientIdAndDoctorId(reviewId, getCurrentUserId(), doctorId)
                 .map(review -> reviewMapper.updateReview(createUpdateReviewDto, review))
                 .map(reviewRepository::save)
                 .map(reviewMapper::toReviewDto)
-                .orElseThrow();
+                .orElseThrow(() -> new ReviewNotFoundException(REVIEW_NOT_FOUND + reviewId));
     }
 
     public void delete(Role role, UUID doctorId, UUID reviewId) {

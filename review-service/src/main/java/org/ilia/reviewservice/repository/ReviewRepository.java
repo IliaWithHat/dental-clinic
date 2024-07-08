@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
+    Optional<Review> findByIdAndPatientIdAndDoctorId(UUID id, UUID patientId, UUID doctorId);
+
     Optional<Review> findByIdAndDoctorId(UUID id, UUID doctorId);
 
     List<Review> findByDoctorId(UUID doctorId);
