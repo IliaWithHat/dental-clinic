@@ -8,6 +8,7 @@ import org.ilia.reviewservice.enums.Role;
 import org.ilia.reviewservice.service.ReviewService;
 import org.ilia.reviewservice.validation.annotation.RightRole;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewDto> create(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                             @PathVariable UUID doctorId,
-                                            @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
+                                            @RequestBody @Validated CreateUpdateReviewDto createUpdateReviewDto) {
         return ResponseEntity.status(CREATED).body(reviewService.create(role, doctorId, createUpdateReviewDto));
     }
 
@@ -42,7 +43,7 @@ public class ReviewController {
     public ResponseEntity<ReviewDto> update(@PathVariable @RightRole(allowedRoles = DOCTOR) Role role,
                                             @PathVariable UUID doctorId,
                                             @PathVariable UUID reviewId,
-                                            @RequestBody CreateUpdateReviewDto createUpdateReviewDto) {
+                                            @RequestBody @Validated CreateUpdateReviewDto createUpdateReviewDto) {
         return ResponseEntity.ok().body(reviewService.update(role, doctorId, reviewId, createUpdateReviewDto));
     }
 

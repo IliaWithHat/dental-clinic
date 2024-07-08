@@ -41,10 +41,8 @@ public class SecurityConfiguration {
 
                         .requestMatchers(POST,
                                 "/v1/{role}/{doctorId}/review").hasAnyRole(PATIENT.name(), ADMIN.name())
-
                         .requestMatchers(PUT,
                                 "/v1/{role}/{doctorId}/review/{reviewId}").hasAnyRole(PATIENT.name(), ADMIN.name())
-
                         .requestMatchers(DELETE,
                                 "/v1/{role}/{doctorId}/review/{reviewId}").hasAnyRole(PATIENT.name(), ADMIN.name())
 
