@@ -22,7 +22,6 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static org.ilia.userservice.enums.Role.ADMIN;
-import static org.ilia.userservice.enums.Role.OWNER;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -41,13 +40,12 @@ public class SecurityConfiguration {
 
                         .requestMatchers(GET,
                                 "/v1/{role}/{id}").authenticated()
+                        .requestMatchers(GET,
+                                "v1/{role}").authenticated()
                         .requestMatchers(PUT,
                                 "/v1/{role}/{id}").authenticated()
                         .requestMatchers(DELETE,
                                 "v1/{role}/{id}").authenticated()
-
-                        .requestMatchers(GET,
-                                "v1/{role}").hasAnyRole(OWNER.name(), ADMIN.name())
 
                         .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2

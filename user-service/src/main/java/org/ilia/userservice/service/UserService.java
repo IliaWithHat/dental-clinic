@@ -61,10 +61,14 @@ public class UserService {
 
     public UserDto findById(Role role, UUID userId) {
         UserRepresentation userRepresentation = verifyUserExistByUserIdAndRole(userId, role);
+        verifyUserPermissionForFindByIdAction(userId, role);
+
         return userMapper.toUserDto(userRepresentation, role);
     }
 
     public List<UserDto> findByRole(Role role) {
+        verifyUserPermissionForFindByRoleAction(role);
+
         return keycloakService.getUsersByRole(role).stream()
                 .map(user -> userMapper.toUserDto(user, role))
                 .toList();
@@ -88,6 +92,25 @@ public class UserService {
         if (!isAllowedActionOnUser(userId, role)) {
             throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
         }
+    }
+
+    private void verifyUserPermissionForFindByIdAction(UUID userId, Role role) {
+        UUID currentUserId = getCurrentUserId();
+        Role currentUserRole = getCurrentUserRole();
+        if ((currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
+            (currentUserRole == PATIENT && role == PATIENT && currentUserId.equals(userId))) {
+            return;
+        }
+        throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
+    }
+
+    private void verifyUserPermissionForFindByRoleAction(Role role) {
+        Role currentUserRole = getCurrentUserRole();
+        if ((currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
+            (currentUserRole == PATIENT && role == DOCTOR)) {
+            return;
+        }
+        throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
     }
 
     private void verifyUserPermissionForDeleteAction(UUID userId, Role role) {
