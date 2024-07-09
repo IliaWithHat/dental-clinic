@@ -182,6 +182,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
     ports:
       - "8011:8011"
     networks:
@@ -199,6 +201,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
       kafka:
         condition: service_started
     ports:
@@ -218,6 +222,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
     ports:
       - "8013:8013"
     networks:
