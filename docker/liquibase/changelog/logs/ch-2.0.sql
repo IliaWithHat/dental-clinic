@@ -1,5 +1,6 @@
-CREATE SCHEMA review_service_schema;
+--liquibase formatted sql
 
+--changeset IliaWithHat:1
 CREATE TABLE review_service_schema.review
 (
     id         UUID PRIMARY KEY,
@@ -10,8 +11,3 @@ CREATE TABLE review_service_schema.review
     patient_id UUID         NOT NULL,
     doctor_id  UUID         NOT NULL
 );
-
-CREATE USER review_user WITH PASSWORD 'password';
-
-GRANT USAGE ON SCHEMA review_service_schema TO review_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA review_service_schema TO review_user;

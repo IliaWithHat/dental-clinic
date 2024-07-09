@@ -1,5 +1,6 @@
-CREATE SCHEMA time_service_schema;
+--liquibase formatted sql
 
+--changeset IliaWithHat:1
 CREATE TABLE time_service_schema.working_time
 (
     id                       UUID PRIMARY KEY,
@@ -11,8 +12,3 @@ CREATE TABLE time_service_schema.working_time
     time_interval_in_minutes INT         NOT NULL,
     doctor_id                UUID        NOT NULL
 );
-
-CREATE USER time_user WITH PASSWORD 'password';
-
-GRANT USAGE ON SCHEMA time_service_schema TO time_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA time_service_schema TO time_user;

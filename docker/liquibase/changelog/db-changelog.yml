@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: logs/ch-1.0.sql
+  - include:
+      file: logs/ch-2.0.sql
+  - include:
+      file: logs/ch-3.0.sql
