@@ -1,0 +1,4 @@
+spring.cloud.config.server.git:
+  uri: https://github.com/IliaWithHat/dental-clinic-config.git
+  skip-ssl-validation: true
+  clone-on-start: true

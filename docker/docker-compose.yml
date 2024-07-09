@@ -65,6 +65,7 @@ services:
   config-server:
     image: iliawithhat/config-server
     container_name: config-server-container
+    env_file: environments/public_env
     healthcheck:
       test: curl -fs localhost:8000/actuator/health | grep UP || exit 1
       interval: 5s

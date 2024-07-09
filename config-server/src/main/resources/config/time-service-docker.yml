@@ -5,13 +5,10 @@ spring:
     password: ${DATABASE_PASSWORD}
   jpa.open-in-view: false
 
-  security:
-    oauth2:
-      resourceserver:
-        opaquetoken:
-          introspection-uri: ${keycloak.server-url}/realms/${keycloak.realm}/protocol/openid-connect/token/introspect
-          client-id: ${keycloak.client-id}
-          client-secret: ${keycloak.client-secret}
+  security.oauth2.resourceserver.opaquetoken:
+    introspection-uri: ${keycloak.server-url}/realms/${keycloak.realm}/protocol/openid-connect/token/introspect
+    client-id: ${keycloak.client-id}
+    client-secret: ${keycloak.client-secret}
 
 keycloak:
   server-url: http://keycloak:8001
