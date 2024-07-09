@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: logs/ch-1.0.sql
