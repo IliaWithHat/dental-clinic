@@ -2,11 +2,7 @@ services:
   database:
     image: postgres:16.1
     container_name: postgres-container
-    environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "dental_clinic_repository"
-      PGDATA: "/var/lib/postgresql/data/pgdata"
+    env_file: environments/database_env
     volumes:
       - ./sql/keycloak.sql:/docker-entrypoint-initdb.d/1-keycloak.sql
       - ./sql/init-appointment_service.sql:/docker-entrypoint-initdb.d/2-init.sql
@@ -30,12 +26,7 @@ services:
     image: liquibase/liquibase:4.28
     container_name: liquibase-container
     command: update
-    environment:
-      LIQUIBASE_COMMAND_URL: jdbc:postgresql://database:5432/dental_clinic_repository
-      LIQUIBASE_COMMAND_USERNAME: postgres
-      LIQUIBASE_COMMAND_PASSWORD: postgres
-      LIQUIBASE_SEARCH_PATH: /liquibase/changelog
-      LIQUIBASE_COMMAND_CHANGELOG_FILE: db-changelog.yml
+    env_file: environments/liquibase_env
     volumes:
       - ./liquibase/changelog:/liquibase/changelog
     depends_on:
@@ -47,8 +38,7 @@ services:
   zookeeper:
     image: bitnami/zookeeper:3.9.2
     container_name: zookeeper-container
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: yes
+    env_file: environments/zookeeper_env
     healthcheck:
       test: nc -z localhost 2181 || exit -1
       interval: 5s
@@ -62,11 +52,7 @@ services:
   kafka:
     image: bitnami/kafka:3.7.0
     container_name: kafka-container
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_ADVERTISED_HOST_NAME: kafka
-      KAFKA_ADVERTISED_HOST_PORT: 9092
+    env_file: environments/kafka_env
     depends_on:
       zookeeper:
         condition: service_healthy
