@@ -26,7 +26,7 @@ import static org.ilia.reviewservice.enums.Role.DOCTOR;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/v1/{role}/{doctorId}/review")
+@RequestMapping("/api/v1/{role}/{doctorId}/review")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Tag(name = "Review Management", description = "APIs for managing reviews")

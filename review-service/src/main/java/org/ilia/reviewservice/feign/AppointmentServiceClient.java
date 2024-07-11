@@ -13,6 +13,6 @@ import java.util.UUID;
 @FeignClient(name = "appointment-service", configuration = FeignInterceptorConfiguration.class)
 public interface AppointmentServiceClient {
 
-    @GetMapping("/v1/{role}/{userId}/appointment")
+    @GetMapping("/api/v1/{role}/{userId}/appointment")
     List<AppointmentDto> find(@PathVariable Role role, @PathVariable UUID userId);
 }

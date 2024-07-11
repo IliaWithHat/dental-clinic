@@ -36,15 +36,15 @@ public class SecurityConfiguration {
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         .requestMatchers(GET,
-                                "/v1/{role}/{userId}/appointment").authenticated()
+                                "/api/v1/{role}/{userId}/appointment").authenticated()
 
                         .requestMatchers(POST,
-                                "/v1/{role}/{userId}/appointment").hasAnyRole(PATIENT.name(), ADMIN.name())
+                                "/api/v1/{role}/{userId}/appointment").hasAnyRole(PATIENT.name(), ADMIN.name())
                         .requestMatchers(DELETE,
-                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
+                                "/api/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(PATIENT.name(), ADMIN.name())
 
                         .requestMatchers(PUT,
-                                "/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(DOCTOR.name(), ADMIN.name())
+                                "/api/v1/{role}/{userId}/appointment/{appointmentId}").hasAnyRole(DOCTOR.name(), ADMIN.name())
 
                         .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2

@@ -34,7 +34,7 @@ import static org.ilia.appointmentservice.enums.State.FREE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/v1/{role}/{userId}/appointment")
+@RequestMapping("/api/v1/{role}/{userId}/appointment")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Tag(name = "Appointment Management", description = "APIs for managing appointments")

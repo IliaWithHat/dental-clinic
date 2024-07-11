@@ -13,6 +13,6 @@ import java.util.UUID;
 @FeignClient(name = "time-service", configuration = FeignInterceptorConfiguration.class)
 public interface TimeServiceClient {
 
-    @GetMapping("/v1/{role}/{doctorId}/working-time")
+    @GetMapping("/api/v1/{role}/{doctorId}/working-time")
     List<WorkingTimeDto> findWorkingTimesByDoctorId(@PathVariable Role role, @PathVariable UUID doctorId);
 }

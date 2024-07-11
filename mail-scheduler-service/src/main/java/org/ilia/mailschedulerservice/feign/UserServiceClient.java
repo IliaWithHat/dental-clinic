@@ -17,12 +17,12 @@ import java.util.UUID;
 @FeignClient(name = "user-service", configuration = FeignInterceptorConfiguration.class)
 public interface UserServiceClient {
 
-    @PostMapping("/v1/{role}/login")
+    @PostMapping("/api/v1/{role}/login")
     SuccessLoginDto login(@PathVariable Role role, @RequestBody LoginDto loginDto);
 
-    @GetMapping("/v1/{role}/{id}")
+    @GetMapping("/api/v1/{role}/{id}")
     UserDto findById(@PathVariable Role role, @PathVariable UUID id);
 
-    @GetMapping("/v1/{role}")
+    @GetMapping("/api/v1/{role}")
     List<UserDto> findByRole(@PathVariable Role role);
 }

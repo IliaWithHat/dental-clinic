@@ -36,16 +36,16 @@ public class SecurityConfiguration {
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                         .requestMatchers(POST,
-                                "v1/{role}", "/v1/{role}/login").permitAll()
+                                "/api/v1/{role}", "/api/v1/{role}/login").permitAll()
 
                         .requestMatchers(GET,
-                                "/v1/{role}/{id}").authenticated()
+                                "/api/v1/{role}/{id}").authenticated()
                         .requestMatchers(GET,
-                                "v1/{role}").authenticated()
+                                "/api/v1/{role}").authenticated()
                         .requestMatchers(PUT,
-                                "/v1/{role}/{id}").authenticated()
+                                "/api/v1/{role}/{id}").authenticated()
                         .requestMatchers(DELETE,
-                                "v1/{role}/{id}").authenticated()
+                                "/api/v1/{role}/{id}").authenticated()
 
                         .anyRequest().hasRole(ADMIN.name()))
                 .oauth2ResourceServer((oauth2) -> oauth2

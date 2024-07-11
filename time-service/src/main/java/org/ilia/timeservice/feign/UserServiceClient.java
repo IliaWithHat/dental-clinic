@@ -15,6 +15,6 @@ import java.util.UUID;
 })
 public interface UserServiceClient {
 
-    @GetMapping("/v1/{role}/{id}")
+    @GetMapping("/api/v1/{role}/{id}")
     UserDto findById(@PathVariable Role role, @PathVariable UUID id);
 }

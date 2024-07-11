@@ -32,7 +32,7 @@ import static org.ilia.timeservice.enums.Role.DOCTOR;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/v1/{role}/{doctorId}/working-time")
+@RequestMapping("/api/v1/{role}/{doctorId}/working-time")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Tag(name = "Working Time Management", description = "APIs for managing working times")

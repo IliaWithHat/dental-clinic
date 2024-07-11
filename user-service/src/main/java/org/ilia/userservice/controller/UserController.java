@@ -32,7 +32,7 @@ import static org.ilia.userservice.enums.Role.PATIENT;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping("/v1/{role}")
+@RequestMapping("/api/v1/{role}")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Tag(name = "User Management", description = "APIs for managing users")
