@@ -32,7 +32,7 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
@@ -48,8 +48,8 @@ public class SecurityConfiguration {
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .opaqueToken(Customizer.withDefaults()))
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(STATELESS));
-        return http.build();
+                        .sessionCreationPolicy(STATELESS))
+                .build();
     }
 
     @Component
