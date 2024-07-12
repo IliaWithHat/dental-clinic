@@ -16,7 +16,6 @@ for %%s in (%SERVICES_LIST%) do (
     docker rmi %DOCKERHUB_USERNAME%/%%s
 )
 
-call build-and-push.bat %*
-call run.bat %*
+call build-and-push-and-run.bat %*
 
 :eof
