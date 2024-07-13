@@ -8,10 +8,13 @@ import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.controller.request.UpdateUserDto;
 import org.ilia.userservice.controller.response.SuccessLoginDto;
 import org.ilia.userservice.controller.response.UserDto;
+import org.ilia.userservice.entity.MailDetails;
 import org.ilia.userservice.enums.Role;
+import org.ilia.userservice.enums.Subject;
 import org.ilia.userservice.exception.UserAlreadyExistException;
 import org.ilia.userservice.exception.UserNotFoundException;
 import org.ilia.userservice.exception.UserNotHavePermissionException;
+import org.ilia.userservice.kafka.KafkaProducer;
 import org.ilia.userservice.mapper.UserMapper;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -27,6 +30,7 @@ import java.util.UUID;
 import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.userservice.constant.ExceptionMessages.*;
 import static org.ilia.userservice.enums.Role.*;
+import static org.ilia.userservice.enums.Subject.WELCOME;
 
 @Service
 @RequiredArgsConstructor
@@ -35,13 +39,32 @@ public class UserService {
 
     KeycloakService keycloakService;
     UserMapper userMapper;
+    KafkaProducer kafkaProducer;
 
     public UserDto create(Role role, CreateUserDto createUserDto) {
         verifyUserPermissionForCreateAction(role);
         verifyUserNotExistByEmail(createUserDto.getEmail());
 
         UserRepresentation createdUser = keycloakService.createUser(role, userMapper.toUser(createUserDto));
-        return userMapper.toUserDto(createdUser, role);
+        UserDto userDto = userMapper.toUserDto(createdUser, role);
+        if (role == PATIENT) {
+            sendWelcomeEmail(userDto);
+        }
+        return userDto;
+    }
+
+    private void sendWelcomeEmail(UserDto patient) {
+        MailDetails mailDetails = buildMailDetails(patient, WELCOME);
+        kafkaProducer.send(mailDetails);
+    }
+
+    private MailDetails buildMailDetails(UserDto patient, Subject subject) {
+        return MailDetails.builder()
+                .subject(subject)
+                .patientEmail(patient.getEmail())
+                .patientFirstName(patient.getFirstName())
+                .patientLastName(patient.getLastName())
+                .build();
     }
 
     public UserDto update(Role role, UUID userId, UpdateUserDto updateUserDto) {
