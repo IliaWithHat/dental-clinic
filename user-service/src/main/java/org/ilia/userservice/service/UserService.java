@@ -98,7 +98,8 @@ public class UserService {
         UUID currentUserId = getCurrentUserId();
         Role currentUserRole = getCurrentUserRole();
         if ((currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
-            (currentUserRole == PATIENT && role == PATIENT && currentUserId.equals(userId))) {
+            (currentUserRole == PATIENT && role == PATIENT && currentUserId.equals(userId)) ||
+            (currentUserRole == PATIENT && role == DOCTOR)) {
             return;
         }
         throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
