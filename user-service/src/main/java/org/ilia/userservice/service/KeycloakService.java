@@ -73,7 +73,7 @@ public class KeycloakService {
 
     private UserRepresentation mapUserToUserRepresentation(User user) {
         UserRepresentation userRepresentation = new UserRepresentation();
-        userRepresentation.setId(user.getId().toString());
+        userRepresentation.setId(user.getId() == null ? null : user.getId().toString());
         userRepresentation.setEmail(user.getEmail());
         userRepresentation.setFirstName(user.getFirstName());
         userRepresentation.setLastName(user.getLastName());
