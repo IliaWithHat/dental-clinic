@@ -1,14 +1,16 @@
 eureka:
   server:
-    waitTimeInMsWhenSyncEmpty: 5
+    wait-time-in-ms-when-sync-empty: 0
   client:
     register-with-eureka: false
     fetch-registry: false
-    serviceUrl:
+    service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
   instance:
     hostname: localhost
 
 server.port: 8002
 
-management.endpoints.web.exposure.include: "*"
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always

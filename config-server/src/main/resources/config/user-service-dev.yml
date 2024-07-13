@@ -13,8 +13,10 @@ keycloak:
 
 eureka:
   instance.prefer-ip-address: true
-  client.serviceUrl.defaultZone: http://localhost:8002/eureka/
+  client.service-url.defaultZone: http://localhost:8002/eureka/
 
 server.port: 8010
 
-management.endpoints.web.exposure.include: "*"
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always
