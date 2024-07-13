@@ -4,7 +4,9 @@ spring.cloud.gateway.discovery.locator:
 
 eureka:
   instance.prefer-ip-address: true
-  client.service-url.defaultZone: http://localhost:8002/eureka/
+  client:
+    registry-fetch-interval-seconds: 1
+    service-url.defaultZone: http://localhost:8002/eureka/
 
 server.port: 8003
 
