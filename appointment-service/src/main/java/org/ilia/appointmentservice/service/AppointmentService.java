@@ -164,7 +164,8 @@ public class AppointmentService {
 
     public void delete(Role role, UUID doctorId, UUID appointmentId) {
         verifyUserExistByRoleAndId(role, doctorId);
-        verifyAppointmentExistById(appointmentId);
+        Appointment appointment = verifyAppointmentExistById(appointmentId);
+        verifyAppointmentNotCompleted(appointment);
 
         appointmentRepository.deleteById(appointmentId);
     }
@@ -188,10 +189,18 @@ public class AppointmentService {
         }
     }
 
-    private void verifyAppointmentExistById(UUID appointmentId) {
-        if (appointmentRepository.findById(appointmentId).isEmpty()) {
+    private void verifyAppointmentNotCompleted(Appointment appointment) {
+        if (appointment.getIsPatientCome() != null) {
+            throw new CompletedAppointmentDeletionException(COMPLETED_APPOINTMENT_DELETION);
+        }
+    }
+
+    private Appointment verifyAppointmentExistById(UUID appointmentId) {
+        Optional<Appointment> appointment = appointmentRepository.findById(appointmentId);
+        if (appointment.isEmpty()) {
             throw new AppointmentNotFoundException(APPOINTMENT_NOT_FOUND + appointmentId);
         }
+        return appointment.get();
     }
 
     private void verifyAppointmentNotExistByIdAndDate(UUID doctorId, LocalDateTime appointmentDate) {

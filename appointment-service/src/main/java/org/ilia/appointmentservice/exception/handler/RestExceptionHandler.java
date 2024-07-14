@@ -106,4 +106,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
+
+    @ExceptionHandler(CompletedAppointmentDeletionException.class)
+    public final ResponseEntity<Object> handleCompletedAppointmentDeletionException(CompletedAppointmentDeletionException ex) {
+        HttpStatus status = CONFLICT;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
 }
