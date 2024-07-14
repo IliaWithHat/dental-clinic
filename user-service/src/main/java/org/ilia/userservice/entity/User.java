@@ -7,6 +7,7 @@ import org.ilia.userservice.enums.Role;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static java.lang.Boolean.FALSE;
 import static lombok.AccessLevel.PRIVATE;
 
 @Data
@@ -20,6 +21,7 @@ public class User {
     LocalDate birthDate;
     String phoneNumber;
     Boolean isWorking;
+    Boolean isDeleted = FALSE;
     String password;
     Role role;
 }

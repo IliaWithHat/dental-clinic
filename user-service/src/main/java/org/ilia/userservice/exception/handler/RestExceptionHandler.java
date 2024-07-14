@@ -1,9 +1,6 @@
 package org.ilia.userservice.exception.handler;
 
-import org.ilia.userservice.exception.InvalidIsWorkingFieldException;
-import org.ilia.userservice.exception.UserAlreadyExistException;
-import org.ilia.userservice.exception.UserNotFoundException;
-import org.ilia.userservice.exception.UserNotHavePermissionException;
+import org.ilia.userservice.exception.*;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -76,6 +73,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UserNotHavePermissionException.class)
     public final ResponseEntity<Object> handleUserNotHavePermissionException(UserNotHavePermissionException ex) {
         HttpStatus status = FORBIDDEN;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+        return ResponseEntity.status(status).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UserDeletedException.class)
+    public final ResponseEntity<Object> handleUserDeletedException(UserDeletedException ex) {
+        HttpStatus status = CONFLICT;
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }

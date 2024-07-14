@@ -21,12 +21,20 @@ public interface UserMapper {
 
     User toUser(CreateUserDto createUserDto);
 
+    User toUser(UpdateUserDto updateUserDto, UUID id);
+
+    @Mapping(target = "birthDate", expression = "java(getBirthDateFromMap(userRepresentation.getAttributes()))")
+    @Mapping(target = "phoneNumber", expression = "java(getPhoneNumberFromMap(userRepresentation.getAttributes()))")
+    @Mapping(target = "isWorking", expression = "java(getIsWorkingFromMap(userRepresentation.getAttributes()))")
+    @Mapping(target = "isDeleted", expression = "java(getIsDeletedFromMap(userRepresentation.getAttributes()))")
+    User toUser(UserRepresentation userRepresentation, Role role);
+
+    UserDto toUserDto(User user);
+
     @Mapping(target = "birthDate", expression = "java(getBirthDateFromMap(userRepresentation.getAttributes()))")
     @Mapping(target = "phoneNumber", expression = "java(getPhoneNumberFromMap(userRepresentation.getAttributes()))")
     @Mapping(target = "isWorking", expression = "java(getIsWorkingFromMap(userRepresentation.getAttributes()))")
     UserDto toUserDto(UserRepresentation userRepresentation, Role role);
-
-    User toUser(UpdateUserDto updateUserDto, UUID id);
 
     default LocalDate getBirthDateFromMap(Map<String, List<String>> map) {
         return LocalDate.parse(map.get("birthDate").getFirst());
@@ -38,6 +46,11 @@ public interface UserMapper {
 
     default Boolean getIsWorkingFromMap(Map<String, List<String>> map) {
         List<String> value = map.get("isWorking");
+        return value == null ? null : Boolean.parseBoolean(value.getFirst());
+    }
+
+    default Boolean getIsDeletedFromMap(Map<String, List<String>> map) {
+        List<String> value = map.get("isDeleted");
         return value == null ? null : Boolean.parseBoolean(value.getFirst());
     }
 }

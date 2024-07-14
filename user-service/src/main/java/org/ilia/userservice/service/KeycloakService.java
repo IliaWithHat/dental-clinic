@@ -91,6 +91,7 @@ public class KeycloakService {
         if (user.getIsWorking() != null) {
             attributes.put("isWorking", List.of(user.getIsWorking().toString()));
         }
+        attributes.put("isDeleted", List.of(user.getIsDeleted().toString()));
         return attributes;
     }
 
@@ -105,10 +106,6 @@ public class KeycloakService {
 
     private void addRoleToUser(Role role, String userId) {
         usersResource.get(userId).roles().clientLevel(clientId).add(List.of(allRoles.get(role)));
-    }
-
-    public void deleteUser(UUID userId) {
-        usersResource.delete(userId.toString()).close();
     }
 
     public Optional<UserRepresentation> getUserByEmail(String email) {

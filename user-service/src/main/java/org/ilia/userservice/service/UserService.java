@@ -8,8 +8,10 @@ import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.controller.request.UpdateUserDto;
 import org.ilia.userservice.controller.response.SuccessLoginDto;
 import org.ilia.userservice.controller.response.UserDto;
+import org.ilia.userservice.entity.User;
 import org.ilia.userservice.enums.Role;
 import org.ilia.userservice.exception.UserAlreadyExistException;
+import org.ilia.userservice.exception.UserDeletedException;
 import org.ilia.userservice.exception.UserNotFoundException;
 import org.ilia.userservice.exception.UserNotHavePermissionException;
 import org.ilia.userservice.mapper.UserMapper;
@@ -51,39 +53,46 @@ public class UserService {
 
     public UserDto update(Role role, UUID userId, UpdateUserDto updateUserDto) {
         verifyUserPermissionForUpdateAction(userId, role);
-        verifyUserExistByUserIdAndRole(userId, role);
+        User user = verifyUserExistByUserIdAndRole(userId, role);
+        verifyUserNotDeleted(user);
 
         UserRepresentation updatedUser = keycloakService.updateUser(userMapper.toUser(updateUserDto, userId));
         return userMapper.toUserDto(updatedUser, role);
     }
 
     public SuccessLoginDto login(Role role, LoginDto loginDto) {
-        verifyUserExistByEmailAndRole(loginDto.getEmail(), role);
+        User user = verifyUserExistByEmailAndRole(loginDto.getEmail(), role);
+        verifyUserNotDeleted(user);
 
         Pair<String, String> accessToken = keycloakService.getAccessToken(loginDto);
         return new SuccessLoginDto(accessToken.getLeft(), accessToken.getRight());
     }
 
     public UserDto findById(Role role, UUID userId) {
-        UserRepresentation userRepresentation = verifyUserExistByUserIdAndRole(userId, role);
+        User user = verifyUserExistByUserIdAndRole(userId, role);
         verifyUserPermissionForFindByIdAction(userId, role);
+        verifyUserNotDeleted(user);
 
-        return userMapper.toUserDto(userRepresentation, role);
+        return userMapper.toUserDto(user);
     }
 
     public List<UserDto> findByRole(Role role) {
         verifyUserPermissionForFindByRoleAction(role);
 
         return keycloakService.getUsersByRole(role).stream()
-                .map(user -> userMapper.toUserDto(user, role))
+                .map(user -> userMapper.toUser(user, role))
+                .filter(user -> !user.getIsDeleted())
+                .map(userMapper::toUserDto)
                 .toList();
     }
 
     public void delete(Role role, UUID userId) {
-        verifyUserExistByUserIdAndRole(userId, role);
+        User user = verifyUserExistByUserIdAndRole(userId, role);
         verifyUserPermissionForDeleteAction(userId, role);
+        verifyUserNotDeleted(user);
 
-        keycloakService.deleteUser(userId);
+        user.setIsDeleted(true);
+        keycloakService.updateUser(user);
     }
 
     private void verifyUserPermissionForCreateAction(Role targetUserRole) {
@@ -162,19 +171,27 @@ public class UserService {
         }
     }
 
-    private void verifyUserExistByEmailAndRole(String email, Role role) {
-        keycloakService.getUserByEmail(email)
+    private User verifyUserExistByEmailAndRole(String email, Role role) {
+        return keycloakService.getUserByEmail(email)
                 .filter(user -> isUserRoleValid(UUID.fromString(user.getId()), role))
+                .map(ur -> userMapper.toUser(ur, role))
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_BY_EMAIL_AND_ROLE.formatted(email, role)));
     }
 
-    private UserRepresentation verifyUserExistByUserIdAndRole(UUID userId, Role role) {
+    private User verifyUserExistByUserIdAndRole(UUID userId, Role role) {
         return keycloakService.getUserById(userId)
-                .filter(user -> isUserRoleValid(userId, role))
+                .filter(ur -> isUserRoleValid(userId, role))
+                .map(ur -> userMapper.toUser(ur, role))
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_BY_ID_AND_ROLE.formatted(userId, role)));
     }
 
     private boolean isUserRoleValid(UUID userId, Role role) {
         return keycloakService.getUserRoleByUserId(userId) == role;
+    }
+
+    private void verifyUserNotDeleted(User user) {
+        if (user.getIsDeleted()) {
+            throw new UserDeletedException(USER_DELETED);
+        }
     }
 }
