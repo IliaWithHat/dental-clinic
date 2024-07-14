@@ -17,7 +17,7 @@ public class FeignInterceptorConfiguration {
         return requestTemplate -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication instanceof BearerTokenAuthentication bearerToken) {
-                requestTemplate.header("Authorization", String.format("Bearer %s", bearerToken.getToken().getTokenValue()));
+                requestTemplate.header("Authorization", "Bearer %s".formatted(bearerToken.getToken().getTokenValue()));
             }
         };
     }

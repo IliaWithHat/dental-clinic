@@ -8,13 +8,10 @@ import org.ilia.userservice.controller.request.LoginDto;
 import org.ilia.userservice.controller.request.UpdateUserDto;
 import org.ilia.userservice.controller.response.SuccessLoginDto;
 import org.ilia.userservice.controller.response.UserDto;
-import org.ilia.userservice.entity.MailDetails;
 import org.ilia.userservice.enums.Role;
-import org.ilia.userservice.enums.Subject;
 import org.ilia.userservice.exception.UserAlreadyExistException;
 import org.ilia.userservice.exception.UserNotFoundException;
 import org.ilia.userservice.exception.UserNotHavePermissionException;
-import org.ilia.userservice.kafka.KafkaProducer;
 import org.ilia.userservice.mapper.UserMapper;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -24,13 +21,11 @@ import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrinci
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.ilia.userservice.constant.ExceptionMessages.*;
 import static org.ilia.userservice.enums.Role.*;
-import static org.ilia.userservice.enums.Subject.WELCOME;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +34,7 @@ public class UserService {
 
     KeycloakService keycloakService;
     UserMapper userMapper;
-    KafkaProducer kafkaProducer;
+    MailService mailService;
 
     public UserDto create(Role role, CreateUserDto createUserDto) {
         verifyUserPermissionForCreateAction(role);
@@ -47,24 +42,11 @@ public class UserService {
 
         UserRepresentation createdUser = keycloakService.createUser(role, userMapper.toUser(createUserDto));
         UserDto userDto = userMapper.toUserDto(createdUser, role);
+
         if (role == PATIENT) {
-            sendWelcomeEmail(userDto);
+            mailService.sendWelcomeEmail(userDto);
         }
         return userDto;
-    }
-
-    private void sendWelcomeEmail(UserDto patient) {
-        MailDetails mailDetails = buildMailDetails(patient, WELCOME);
-        kafkaProducer.send(mailDetails);
-    }
-
-    private MailDetails buildMailDetails(UserDto patient, Subject subject) {
-        return MailDetails.builder()
-                .subject(subject)
-                .patientEmail(patient.getEmail())
-                .patientFirstName(patient.getFirstName())
-                .patientLastName(patient.getLastName())
-                .build();
     }
 
     public UserDto update(Role role, UUID userId, UpdateUserDto updateUserDto) {
@@ -104,52 +86,56 @@ public class UserService {
         keycloakService.deleteUser(userId);
     }
 
-    private void verifyUserPermissionForCreateAction(Role role) {
+    private void verifyUserPermissionForCreateAction(Role targetUserRole) {
         Role currentUserRole = getCurrentUserRole();
-        if (role == DOCTOR && (currentUserRole != OWNER && currentUserRole != ADMIN)) {
+        if (targetUserRole == DOCTOR && (currentUserRole != OWNER && currentUserRole != ADMIN)) {
             throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
         }
     }
 
-    private void verifyUserPermissionForUpdateAction(UUID userId, Role role) {
-        if (!isAllowedActionOnUser(userId, role)) {
-            throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
-        }
-    }
-
-    private void verifyUserPermissionForFindByIdAction(UUID userId, Role role) {
+    private void verifyUserPermissionForUpdateAction(UUID targetUserId, Role targetUserRole) {
         UUID currentUserId = getCurrentUserId();
         Role currentUserRole = getCurrentUserRole();
-        if ((currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
-            (currentUserRole == PATIENT && role == PATIENT && currentUserId.equals(userId)) ||
-            (currentUserRole == PATIENT && role == DOCTOR)) {
-            return;
-        }
-        throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
-    }
-
-    private void verifyUserPermissionForFindByRoleAction(Role role) {
-        Role currentUserRole = getCurrentUserRole();
-        if ((currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
-            (currentUserRole == PATIENT && role == DOCTOR)) {
-            return;
-        }
-        throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
-    }
-
-    private void verifyUserPermissionForDeleteAction(UUID userId, Role role) {
-        if (!isAllowedActionOnUser(userId, role)) {
+        boolean isAllowedAction =
+                (currentUserRole == OWNER || currentUserRole == ADMIN) && (targetUserRole == OWNER || targetUserRole == DOCTOR) ||
+                (currentUserRole == PATIENT && targetUserRole == PATIENT && currentUserId.equals(targetUserId));
+        if (!isAllowedAction) {
             throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
         }
     }
 
-    private boolean isAllowedActionOnUser(UUID targetUserId, Role targetUserRole) {
+    private void verifyUserPermissionForFindByIdAction(UUID targetUserId, Role targetUserRole) {
         UUID currentUserId = getCurrentUserId();
         Role currentUserRole = getCurrentUserRole();
+        boolean isAllowedAction =
+                (currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
+                (currentUserRole == PATIENT && targetUserRole == DOCTOR) ||
+                (currentUserRole == PATIENT && targetUserRole == PATIENT && currentUserId.equals(targetUserId));
+        if (!isAllowedAction) {
+            throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
+        }
+    }
 
-        return (currentUserRole.equals(OWNER) || currentUserRole.equals(ADMIN)) &&
-               (targetUserRole.equals(PATIENT) || targetUserRole.equals(DOCTOR)) ||
-               (currentUserRole.equals(PATIENT) && targetUserRole.equals(PATIENT) && currentUserId.equals(targetUserId));
+    private void verifyUserPermissionForFindByRoleAction(Role targetUserRole) {
+        Role currentUserRole = getCurrentUserRole();
+        boolean isAllowedAction =
+                (currentUserRole == OWNER || currentUserRole == ADMIN || currentUserRole == DOCTOR) ||
+                (currentUserRole == PATIENT && targetUserRole == DOCTOR);
+        if (!isAllowedAction) {
+            throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
+        }
+    }
+
+    private void verifyUserPermissionForDeleteAction(UUID targetUserId, Role targetUserRole) {
+        UUID currentUserId = getCurrentUserId();
+        Role currentUserRole = getCurrentUserRole();
+        boolean isAllowedAction =
+                (currentUserRole == OWNER || currentUserRole == ADMIN) &&
+                (targetUserRole == OWNER || targetUserRole == DOCTOR || targetUserRole == PATIENT) ||
+                (currentUserRole == PATIENT && targetUserRole == PATIENT && currentUserId.equals(targetUserId));
+        if (!isAllowedAction) {
+            throw new UserNotHavePermissionException(USER_NOT_HAVE_PERMISSION);
+        }
     }
 
     private UUID getCurrentUserId() {
@@ -177,18 +163,15 @@ public class UserService {
     }
 
     private void verifyUserExistByEmailAndRole(String email, Role role) {
-        Optional<UserRepresentation> userRepresentation = keycloakService.getUserByEmail(email);
-        if (userRepresentation.isEmpty() || !isUserRoleValid(UUID.fromString(userRepresentation.get().getId()), role)) {
-            throw new UserNotFoundException(String.format(USER_NOT_FOUND_BY_EMAIL_AND_ROLE, email, role));
-        }
+        keycloakService.getUserByEmail(email)
+                .filter(user -> isUserRoleValid(UUID.fromString(user.getId()), role))
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_BY_EMAIL_AND_ROLE.formatted(email, role)));
     }
 
     private UserRepresentation verifyUserExistByUserIdAndRole(UUID userId, Role role) {
-        Optional<UserRepresentation> userRepresentation = keycloakService.getUserById(userId);
-        if (userRepresentation.isEmpty() || !isUserRoleValid(userId, role)) {
-            throw new UserNotFoundException(String.format(USER_NOT_FOUND_BY_ID_AND_ROLE, userId, role));
-        }
-        return userRepresentation.get();
+        return keycloakService.getUserById(userId)
+                .filter(user -> isUserRoleValid(userId, role))
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_BY_ID_AND_ROLE.formatted(userId, role)));
     }
 
     private boolean isUserRoleValid(UUID userId, Role role) {

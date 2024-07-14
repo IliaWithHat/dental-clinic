@@ -26,7 +26,7 @@ public class FeignInterceptorConfiguration {
         return requestTemplate -> {
             String token = tokenService.getToken();
             if (token != null) {
-                requestTemplate.header("Authorization", String.format("Bearer %s", token));
+                requestTemplate.header("Authorization", "Bearer %s".formatted(token));
             }
         };
     }

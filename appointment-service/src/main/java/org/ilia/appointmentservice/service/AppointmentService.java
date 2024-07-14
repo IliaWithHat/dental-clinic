@@ -7,16 +7,13 @@ import org.ilia.appointmentservice.controller.request.DateRangeDto;
 import org.ilia.appointmentservice.controller.request.UpdateAppointmentDto;
 import org.ilia.appointmentservice.controller.response.AppointmentDto;
 import org.ilia.appointmentservice.entity.Appointment;
-import org.ilia.appointmentservice.entity.MailDetails;
 import org.ilia.appointmentservice.enums.Role;
 import org.ilia.appointmentservice.enums.State;
-import org.ilia.appointmentservice.enums.Subject;
 import org.ilia.appointmentservice.exception.*;
 import org.ilia.appointmentservice.feign.TimeServiceClient;
 import org.ilia.appointmentservice.feign.UserServiceClient;
 import org.ilia.appointmentservice.feign.response.UserDto;
 import org.ilia.appointmentservice.feign.response.WorkingTimeDto;
-import org.ilia.appointmentservice.kafka.KafkaProducer;
 import org.ilia.appointmentservice.mapper.AppointmentMapper;
 import org.ilia.appointmentservice.repository.AppointmentRepository;
 import org.springframework.security.core.Authentication;
@@ -38,7 +35,6 @@ import static org.ilia.appointmentservice.enums.Role.DOCTOR;
 import static org.ilia.appointmentservice.enums.Role.PATIENT;
 import static org.ilia.appointmentservice.enums.State.FREE;
 import static org.ilia.appointmentservice.enums.State.OCCUPIED;
-import static org.ilia.appointmentservice.enums.Subject.APPOINTMENT_CONFIRMATION;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +46,7 @@ public class AppointmentService {
     AppointmentMapper appointmentMapper;
     TimeServiceClient timeServiceClient;
     UserServiceClient userServiceClient;
-    KafkaProducer kafkaProducer;
+    MailService mailService;
 
     public AppointmentDto create(Role role, UUID doctorId, CreateAppointmentDto appointmentToSave) {
         UserDto doctor = verifyUserExistByRoleAndId(role, doctorId);
@@ -62,26 +58,9 @@ public class AppointmentService {
         Appointment savedAppointment = appointmentRepository.save(convertedAppointment);
 
         UserDto patient = userServiceClient.findById(PATIENT, savedAppointment.getPatientId());
-        sendAppointmentConfirmationEmail(doctor, patient, savedAppointment);
+        mailService.sendAppointmentConfirmationEmail(doctor, patient, savedAppointment);
 
         return appointmentMapper.toAppointmentDto(savedAppointment);
-    }
-
-    private void sendAppointmentConfirmationEmail(UserDto doctor, UserDto patient, Appointment appointment) {
-        MailDetails mailDetails = buildMailDetails(doctor, patient, appointment, APPOINTMENT_CONFIRMATION);
-        kafkaProducer.send(mailDetails);
-    }
-
-    private MailDetails buildMailDetails(UserDto doctor, UserDto patient, Appointment appointment, Subject subject) {
-        return MailDetails.builder()
-                .subject(subject)
-                .patientEmail(patient.getEmail())
-                .patientFirstName(patient.getFirstName())
-                .patientLastName(patient.getLastName())
-                .doctorFirstName(doctor.getFirstName())
-                .doctorLastName(doctor.getLastName())
-                .appointmentDate(appointment.getDate())
-                .build();
     }
 
     public AppointmentDto update(Role role, UUID doctorId, UUID appointmentId, UpdateAppointmentDto appointmentToUpdate) {
@@ -198,7 +177,7 @@ public class AppointmentService {
     private UserDto verifyUserExistByRoleAndId(Role role, UUID id) {
         UserDto user = userServiceClient.findById(role, id);
         if (user.getRole() != role) {
-            throw new UserNotFoundException(String.format(USER_NOT_FOUND_BY_ID_AND_ROLE, id, role));
+            throw new UserNotFoundException(USER_NOT_FOUND_BY_ID_AND_ROLE.formatted(id, role));
         }
         return user;
     }

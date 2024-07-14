@@ -95,7 +95,7 @@ public class ReviewService {
     private void verifyUserExistByRoleAndId(Role role, UUID id) {
         UserDto user = userServiceClient.findById(role, id);
         if (user.getRole() != role) {
-            throw new UserNotFoundException(String.format(USER_NOT_FOUND_BY_ID_AND_ROLE, id, role));
+            throw new UserNotFoundException(USER_NOT_FOUND_BY_ID_AND_ROLE.formatted(id, role));
         }
     }
 }
