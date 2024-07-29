@@ -112,9 +112,8 @@ public class AppointmentService {
             return generateFreeDates(doctorWorkingTimes, occupiedAppointments, dateRangeDto).stream()
                     .map(date -> appointmentMapper.toAppointmentDto(date, userId))
                     .toList();
-        } else {
-            throw new RuntimeException();
         }
+        throw new RuntimeException();
     }
 
     private List<LocalDateTime> generateFreeDates(List<WorkingTimeDto> doctorWorkingTimes, List<Appointment> occupiedAppointments, DateRangeDto dateRangeDto) {

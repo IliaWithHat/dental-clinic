@@ -45,14 +45,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
     @ExceptionHandler(InvalidDateRangeException.class)
@@ -66,51 +64,34 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UnsupportedOperationException.class)
-    public final ResponseEntity<Object> handleUnsupportedOperationException(UnsupportedOperationException ex) {
-        HttpStatus status = UNPROCESSABLE_ENTITY;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+    public final ResponseEntity<Object> handleUnsupportedOperationException(RuntimeException ex) {
+        return buildResponseEntity(UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public final ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            AppointmentNotFoundException.class
+    })
+    public final ResponseEntity<Object> handleNotFoundException(RuntimeException ex) {
+        return buildResponseEntity(NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(DoctorNotWorkingException.class)
-    public final ResponseEntity<Object> handleDoctorNotWorkingException(DoctorNotWorkingException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(AppointmentAlreadyExistException.class)
-    public final ResponseEntity<Object> handleAppointmentAlreadyExistException(AppointmentAlreadyExistException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(AppointmentNotFoundException.class)
-    public final ResponseEntity<Object> handleAppointmentNotFoundException(AppointmentNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+    @ExceptionHandler({
+            DoctorNotWorkingException.class,
+            AppointmentAlreadyExistException.class,
+            CompletedAppointmentDeletionException.class
+    })
+    public final ResponseEntity<Object> handleConflictException(RuntimeException ex) {
+        return buildResponseEntity(CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(InvalidAppointmentDateException.class)
-    public final ResponseEntity<Object> handleInvalidAppointmentDateException(InvalidAppointmentDateException ex) {
-        HttpStatus status = BAD_REQUEST;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+    public final ResponseEntity<Object> handleBadRequest(RuntimeException ex) {
+        return buildResponseEntity(BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(CompletedAppointmentDeletionException.class)
-    public final ResponseEntity<Object> handleCompletedAppointmentDeletionException(CompletedAppointmentDeletionException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+    private ResponseEntity<Object> buildResponseEntity(HttpStatusCode status, String message) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(message, status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
 }

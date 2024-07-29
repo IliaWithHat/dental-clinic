@@ -5,7 +5,6 @@ import org.ilia.reviewservice.exception.ReviewNotFoundException;
 import org.ilia.reviewservice.exception.UserNotFoundException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -48,34 +47,29 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public final ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(ReviewNotFoundException.class)
-    public final ResponseEntity<Object> handleReviewNotFoundException(ReviewNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            ReviewNotFoundException.class
+    })
+    public final ResponseEntity<Object> handleNotFoundException(RuntimeException ex) {
+        return buildResponseEntity(NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(PatientNotWasOnAppointmentException.class)
-    public final ResponseEntity<Object> handlePatientNotWasOnAppointmentException(PatientNotWasOnAppointmentException ex) {
-        HttpStatus status = BAD_REQUEST;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
+    public final ResponseEntity<Object> handleBadRequestException(RuntimeException ex) {
+        return buildResponseEntity(BAD_REQUEST, ex.getMessage());
+    }
+
+    private ResponseEntity<Object> buildResponseEntity(HttpStatusCode status, String message) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(message, status);
         return ResponseEntity.status(status).body(exceptionResponse);
     }
 }

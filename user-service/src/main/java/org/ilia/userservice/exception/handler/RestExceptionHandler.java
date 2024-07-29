@@ -3,7 +3,6 @@ package org.ilia.userservice.exception.handler;
 import org.ilia.userservice.exception.*;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -46,47 +45,40 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public final ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
-        HttpStatus status = NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserNotHavePermissionException.class)
-    public final ResponseEntity<Object> handleUserNotHavePermissionException(UserNotHavePermissionException ex) {
-        HttpStatus status = FORBIDDEN;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserDeletedException.class)
-    public final ResponseEntity<Object> handleUserDeletedException(UserDeletedException ex) {
-        HttpStatus status = CONFLICT;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), status);
-        return ResponseEntity.status(status).body(exceptionResponse);
+        return buildResponseEntity(status, ex.getMessage());
     }
 
     @ExceptionHandler(InvalidIsWorkingFieldException.class)
-    public final ResponseEntity<Object> handleInvalidIsWorkingFieldException(InvalidIsWorkingFieldException ex) {
+    public final ResponseEntity<Object> handleInvalidIsWorkingFieldException(RuntimeException ex) {
         Map<String, String> error = Map.of("isWorking", ex.getMessage());
         return ResponseEntity.status(BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public final ResponseEntity<Object> handleNotFoundException(RuntimeException ex) {
+        return buildResponseEntity(NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(UserNotHavePermissionException.class)
+    public final ResponseEntity<Object> handleForbiddenException(RuntimeException ex) {
+        return buildResponseEntity(FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler({
+            UserAlreadyExistException.class,
+            UserDeletedException.class
+    })
+    public final ResponseEntity<Object> handleConflictException(RuntimeException ex) {
+        return buildResponseEntity(CONFLICT, ex.getMessage());
+    }
+
+    private ResponseEntity<Object> buildResponseEntity(HttpStatusCode status, String message) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(message, status);
+        return ResponseEntity.status(status).body(exceptionResponse);
     }
 }
